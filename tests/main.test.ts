@@ -28,11 +28,7 @@ describe.skip('benchmarkdotnet-results-publisher', () => {
       });
 
       test('does not log any errors', () => {
-        expect(core.error).toHaveBeenCalledTimes(0);
-      });
-
-      test('does not fail', () => {
-        expect(core.setFailed).toHaveBeenCalledTimes(0);
+        expect(fixture.getErrors()).toEqual([]);
       });
     });
   });
