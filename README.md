@@ -11,15 +11,14 @@ This action was inspired by the [benchmark-action/github-action-benchmark][githu
 <!--
 
 Documention TODO:
-- Document the inputs
 - Warn to not use on pull requests to commit to the same branch to avoid circular workflows
 - Add a note about the GitHub token being required to be able to push to the repository if not the same repository
 
 Features TODO:
-- Handle memory usage
 - Comment on commits if threshold (time or memory) exceeded
 - Comment on pull request source if threshold (time or memory) exceeded
 - Fail the workflow if threshold exceeded
+- Output GITHUB_STEP_SUMMARY of the `*-report.github.md` files
 
 -->
 
@@ -57,12 +56,11 @@ jobs:
 | `branch` | The optional Git branch to push the results to. | `gh-pages` |
 | `commit-message` | The optional Git commit message to use. | - |
 | `max-items` | The optional maximum number of datapoints to include the results file. | Unlimited |
+| `name` | The optional name to use to group the benchmark results that are found. | Inferred from BenchmarkDotNet results |
 | `output-file-path` | The optional path of the file to write the results to. | `./data.json` |
 | `repo` | The optional GitHub repository to push the results to. | [`github.repository`][github-context] |
 | `repo-token` | The GitHub access token to use to push the results to a GitHub repository. | [`github.token`][github-token] |
 | `results-path` | The optional path of the BenchmarkDotNet results directory to process. | `./BenchmarkDotNet.Artifacts` |
-| `user-email` | The optional email address to use for Git commits. | `github-actions[bot]@users.noreply.github.com` |
-| `user-name` | The optional user name to use for Git commits. | `github-actions[bot]` |
 
 ## Outputs
 

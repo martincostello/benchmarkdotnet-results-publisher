@@ -7,12 +7,6 @@ import * as io from '@actions/io';
 import * as os from 'os';
 import * as path from 'path';
 import { jest } from '@jest/globals';
-import {
-  createEmptyFile,
-  createGitRepo,
-  createTemporaryDirectory,
-  execGit,
-} from './helpers';
 import { run } from '../src/main';
 
 export class ActionFixture {
@@ -33,11 +27,10 @@ export class ActionFixture {
   async initialize(
     testFiles: { path: string; data: string }[] = []
   ): Promise<void> {
-    this.tempDir = await createTemporaryDirectory();
+    this.tempDir = await this.createTemporaryDirectory();
     this.outputPath = path.join(this.tempDir, 'github-outputs');
 
-    await createEmptyFile(this.outputPath);
-    await createGitRepo(this.tempDir, testFiles);
+    await this.createEmptyFile(this.outputPath);
 
     this.setupEnvironment();
     this.setupMocks();
@@ -68,38 +61,14 @@ export class ActionFixture {
     return this.outputs[name];
   }
 
-  async checkout(branch: string): Promise<void> {
-    await execGit(['checkout', branch], this.tempDir, true);
+  private async createEmptyFile(fileName: string) {
+    await fs.promises.writeFile(fileName, '');
   }
 
-  async commitHistory(count: number = 1): Promise<string[]> {
-    const history = await execGit(
-      ['log', (count * -1).toString(10), '--pretty=%B'],
-      this.tempDir
+  private async createTemporaryDirectory(): Promise<string> {
+    return await fs.promises.mkdtemp(
+      path.join(os.tmpdir(), 'benchmarkdotnet-results-publisher-')
     );
-    return history.split('\n').filter((p) => p.length > 0);
-  }
-
-  async diff(
-    count: number = 1,
-    nameOnly: boolean = false
-  ): Promise<string | string[]> {
-    const args = ['diff', `HEAD~${count}`, 'HEAD'];
-    if (nameOnly) {
-      args.push('--name-only');
-    }
-    const result = await execGit(args, this.tempDir);
-
-    if (nameOnly) {
-      return result.split('\n').filter((p) => p.length > 0);
-    } else {
-      return result;
-    }
-  }
-
-  async getContent(fileName: string): Promise<string> {
-    fileName = path.join(this.tempDir, fileName);
-    return await fs.promises.readFile(fileName, { encoding: 'utf8' });
   }
 
   private setupEnvironment(): void {
@@ -133,6 +102,9 @@ export class ActionFixture {
       console.debug(`[${level}] ${arg}`);
     };
 
+    jest.spyOn(core, 'isDebug').mockImplementation(() => {
+      return true;
+    });
     jest.spyOn(core, 'debug').mockImplementation((arg) => {
       logger('debug', arg);
     });

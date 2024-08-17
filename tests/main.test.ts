@@ -34,18 +34,6 @@ describe.skip('benchmarkdotnet-results-publisher', () => {
       test('does not fail', () => {
         expect(core.setFailed).toHaveBeenCalledTimes(0);
       });
-
-      test('updates the data', async () => {
-        expect(await fixture.getContent('data.json')).toMatchSnapshot();
-      });
-
-      test('generates the correct commit message', async () => {
-        expect(await fixture.commitHistory(2)).toMatchSnapshot();
-      });
-
-      test('generates the correct diff', async () => {
-        expect(await fixture.diff()).toMatchSnapshot();
-      });
     });
   });
 });

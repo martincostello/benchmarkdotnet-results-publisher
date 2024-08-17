@@ -7,6 +7,7 @@ export interface PublishOptions {
   branch: string;
   commitMessage: string;
   maxItems?: number;
+  name?: string;
   outputFilePath?: string;
   repo: string;
   repoPath: string;
@@ -14,6 +15,5 @@ export interface PublishOptions {
   runId?: string;
   runRepo?: string;
   serverUrl?: string;
-  userEmail: string;
-  userName: string;
+  sha: string;
 }

@@ -28,14 +28,6 @@ inputs:
   results-path:
     description: 'The optional path of the BenchmarkDotNet results directory to process.'
     required: false
-  user-email:
-    description: 'The optional email address to use for Git commits.'
-    required: false
-    default: 'github-actions[bot]@users.noreply.github.com'
-  user-name:
-    description: 'The optional user name to use for Git commits.'
-    required: false
-    default: 'github-actions[bot]'
 runs:
   using: 'node20'
   main: 'dist/main.js'

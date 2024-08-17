@@ -3,13 +3,9 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-
 import { glob } from 'glob';
-import { Writable } from 'stream';
-
 import * as core from '@actions/core';
-import * as exec from '@actions/exec';
-
+import * as github from '@actions/github';
 import { PublishOptions } from './PublishOptions';
 
 export class BenchmarksPublisher {
@@ -19,35 +15,16 @@ export class BenchmarksPublisher {
     this.options = options;
   }
 
-  public static generateCommitMessage(results: BenchmarkResult[]): string {
-    // TODO Fix up the message
-    const name =
-      results.length > 1 ? `${results.length} benchmarks` : results[0].name;
-    const messageLines = [
-      `Publish results for ${name}`,
-      '',
-      `Publish BenchmarkDotNet results for ${results.length} benchmarks.`,
-      '',
-      '---',
-      'benchmarks:',
-      `- name: ${name}`,
-      '...',
-      '',
-      '',
-    ];
-    return messageLines.join('\n');
-  }
-
-  public async publishResults(): Promise<void> {
+  public async publish(): Promise<void> {
     const benchmarks = await this.getBenchmarks();
-    if (benchmarks.keys.length > 0) {
-      await this.updateResults(benchmarks);
+    if (Object.keys(benchmarks).length) {
+      await this.publishResults(benchmarks);
     } else {
-      core.info('No benchmarks found to publish.');
+      core.warning('No benchmarks found to publish.');
     }
   }
 
-  private async findFiles(): Promise<string[]> {
+  private async findJsonResults(): Promise<string[]> {
     return await glob(['**/*-report-full-compressed.json'], {
       absolute: true,
       cwd:
@@ -58,46 +35,43 @@ export class BenchmarksPublisher {
     });
   }
 
-  async getBenchmarks(): Promise<Record<string, BenchmarkResult[]>> {
-    const paths = await this.findFiles();
+  private async getBenchmarks(): Promise<
+    Record<string, BenchmarkDotNetResults>
+  > {
+    const paths = await this.findJsonResults();
 
     core.debug(`Found ${paths.length} BenchmarkDotNet JSON result files.`);
-    for (const file of paths) {
-      core.debug(`  - ${file}`);
+    for (const fileName of paths) {
+      core.debug(`  - ${fileName}`);
     }
 
-    const benchmarks: Record<string, BenchmarkResult[]> = {};
+    const results: Record<string, BenchmarkDotNetResults> = {};
 
     for (const fileName of paths) {
-      const results = await this.parseResults(fileName);
-      if (results.length > 0) {
-        benchmarks[fileName] = results;
+      results[fileName] = await this.parseResults(fileName);
+    }
+
+    core.debug(`Found ${Object.keys(results).length} sets of benchmarks.`);
+    if (core.isDebug()) {
+      for (const fileName in results) {
+        const result = results[fileName];
+        const names = result.Benchmarks.map((b) => b.FullName);
+        core.debug(`  - '${fileName}' (${result.Title}):`);
+        for (const name of names) {
+          core.debug(`    - ${name}`);
+        }
       }
     }
 
-    core.debug(`Found ${Object.keys(benchmarks).length} sets of benchmarks.`);
-    for (const file in benchmarks) {
-      core.debug(`  - '${file}':`);
-      for (const result of benchmarks[file]) {
-        core.debug(`  - ${result.name}`);
-      }
-    }
-
-    return benchmarks;
+    return results;
   }
 
-  private async parseResults(fileName: string): Promise<BenchmarkResult[]> {
+  private async parseResults(
+    fileName: string
+  ): Promise<BenchmarkDotNetResults> {
     try {
       const json = await fs.promises.readFile(fileName, { encoding: 'utf8' });
-      const data: BenchmarkDotNetResults = JSON.parse(json);
-
-      return data.Benchmarks.map((benchmark) => {
-        const name = benchmark.FullName;
-        const value = benchmark.Statistics.Mean;
-        const stdDev = benchmark.Statistics.StandardDeviation;
-        const range = `± ${stdDev}`;
-        return { name, value, unit: 'ns', range };
-      });
+      return JSON.parse(json);
     } catch (error) {
       core.debug(`Failed to parse '${fileName}': ${error}`);
       throw new Error(
@@ -106,188 +80,259 @@ export class BenchmarksPublisher {
     }
   }
 
-  private async execGit(
-    args: string[],
-    ignoreErrors: Boolean = false
-  ): Promise<string> {
-    let commandOutput = '';
-    let commandError = '';
-
-    const options = {
-      cwd: this.options.repoPath,
-      errStream: new NullWritable(),
-      outStream: new NullWritable(),
-      ignoreReturnCode: ignoreErrors as boolean | undefined,
-      silent: ignoreErrors as boolean | undefined,
-      listeners: {
-        stdout: (data: Buffer) => {
-          commandOutput += data.toString();
-        },
-        stderr: (data: Buffer) => {
-          commandError += data.toString();
-        },
-      },
-    };
-
-    const userName = this.options.userEmail ?? 'github-actions[bot]';
-    const userEmail =
-      this.options.userEmail ?? 'github-actions[bot]@users.noreply.github.com';
-    const serverUrl = new URL(
-      this.options.serverUrl ??
-        process.env.GITHUB_SERVER_URL ??
-        'https://github.com'
-    ).origin;
-
-    const argsWithConfig = [
-      ...args,
-      '-c',
-      `user.name=${userName}`,
-      '-c',
-      `user.email=${userEmail}`,
-      '-c',
-      `http.${serverUrl}/.extraheader=`, // This is necessary to support actions/checkout@v2
-    ];
-
-    try {
-      await exec.exec('git', argsWithConfig, options);
-    } catch (error: any) {
-      throw new Error(`The command 'git ${args.join(' ')}' failed: ${error}`);
-    }
-
-    if (commandError && !ignoreErrors) {
-      throw new Error(commandError);
-    }
-
-    core.debug(`git std-out: ${commandOutput}`);
-
-    if (commandError) {
-      core.debug(`git std-err: ${commandError}`);
-    }
-
-    return commandOutput.trimEnd();
+  private getBranch(): string {
+    return this.options.branch ?? 'gh-pages';
   }
 
-  private async updateResults(
-    benchmarks: Record<string, BenchmarkResult[]>
-  ): Promise<string | null> {
-    let filesUpdated = 0;
+  private getResultsPath(): string {
+    return this.options.outputFilePath ?? 'data.json';
+  }
 
-    // Apply the updates to the file system
-    for (const file in benchmarks) {
-      let results: BenchmarkResult[] = [];
+  private async getCurrentResults(): Promise<{
+    data: BenchmarksData;
+    sha: string;
+  }> {
+    const [owner, repo] = this.options.repo.split('/');
+    const ref = this.getBranch();
+    const fileName = this.getResultsPath();
 
-      if (fs.existsSync(file)) {
-        const json = await fs.promises.readFile(file, { encoding: 'utf8' });
-        results = JSON.parse(json);
+    const octokit = github.getOctokit(this.options.accessToken, {
+      baseUrl: this.options.apiUrl,
+    });
+
+    try {
+      const { data: contents } = await octokit.rest.repos.getContent({
+        owner,
+        repo,
+        path: fileName,
+        ref,
+        headers: {
+          accept: 'application/vnd.github.object+json',
+        },
+      });
+
+      const encoding = contents['encoding'];
+      let json: string;
+
+      if (encoding === 'base64' && contents['content']) {
+        json = Buffer.from(contents['content'], 'base64').toString();
+      } else if (encoding === 'none') {
+        const response = await fetch(contents['download_url']);
+        json = await response.text();
       } else {
-        await fs.promises.writeFile(file, '[]', { encoding: 'utf8' });
+        throw new Error(`Unexpected encoding for ${path}: ${encoding}`);
       }
 
-      let dirty = false;
-      const added = benchmarks[file];
-
-      if (added.length > 0) {
-        results = results.concat(added);
-
-        if (this.options.maxItems && results.length > this.options.maxItems) {
-          results = results.slice(results.length - this.options.maxItems);
-        }
-
-        dirty = true;
+      const data = JSON.parse(json);
+      return {
+        data,
+        sha: contents['sha'],
+      };
+    } catch (error: any) {
+      if (error['status'] === 404) {
+        return {
+          data: {
+            lastUpdated: 0,
+            repoUrl: `${this.options.serverUrl}/${this.options.runRepo}`,
+            entries: {},
+          },
+          sha: '',
+        };
       }
-
-      if (dirty) {
-        const content = JSON.stringify(results, null, 2);
-        await fs.promises.writeFile(file, content, { encoding: 'utf8' });
-        filesUpdated++;
-      }
+      throw error;
     }
+  }
 
-    if (filesUpdated < 1) {
-      return null;
-    }
+  private generateCommitMessage(names: string[], sha: string): string {
+    const messageLines = [
+      names.length > 1
+        ? `Publish results for ${names.length} benchmarks`
+        : `Publish results for ${names[0]}`,
+      '',
+    ];
 
-    // Configure Git
-    let branch = this.options.branch;
-
-    if (!branch) {
-      branch = 'gh-pages';
-    }
-
-    let commitMessage = this.options.commitMessage;
-
-    if (!commitMessage) {
-      commitMessage = BenchmarksPublisher.generateCommitMessage(
-        benchmarks.entries
+    if (names.length > 1) {
+      messageLines.push(
+        `Publish BenchmarkDotNet results for ${names.length} benchmarks.`
+      );
+    } else {
+      messageLines.push(
+        `Publish BenchmarkDotNet results for the ${names[0]} benchmark.`
       );
     }
 
-    // TODO Need to clone the repo into another directory if it is not this repo
-    if (this.options.repo) {
-      await this.execGit([
-        'remote',
-        'set-url',
-        'origin',
-        `${this.options.serverUrl}/${this.options.repo}.git`,
-      ]);
-      await this.execGit(['fetch', 'origin'], true);
-    }
-
-    core.debug(`Branch: ${branch}`);
-    core.debug(`Commit message: ${commitMessage}`);
-    core.debug(`User name: ${this.options.userName}`);
-    core.debug(`User email: ${this.options.userEmail}`);
-
-    const branchExists = await this.execGit(
-      ['rev-parse', '--verify', '--quiet', `remotes/origin/${branch}`],
-      true
+    messageLines.push(
+      '',
+      `Generated from ${this.options.runRepo}@${sha} by ${this.options.serverUrl}/${this.options.runRepo}/actions/runs/${this.options.runId}.`,
+      '',
+      '---',
+      'benchmarks:'
     );
 
-    if (!branchExists) {
-      throw new Error(`The ${branch} branch does not exist.`);
+    for (const name of names) {
+      messageLines.push(`- name: ${name}`);
     }
 
-    await this.execGit(['checkout', branch], true);
-    core.info(`Checked out git branch ${branch}`);
+    messageLines.push('...', '', '');
 
-    // Stage all the file system changes
-    await this.execGit(['add', '.']);
-    core.info('Staged git commit for benchmarks update');
+    return messageLines.join('\n');
+  }
 
-    await this.execGit(['commit', '-m', commitMessage, '-s']);
+  private async updateResults(
+    sha: string,
+    results: BenchmarksData
+  ): Promise<boolean> {
+    const [owner, repo] = this.options.repo.split('/');
+    const branch = this.getBranch();
+    const fileName = this.getResultsPath();
 
-    const sha1 = await this.execGit(['log', "--format='%H'", '-n', '1']);
-    const shortSha1 = sha1.replace(/'/g, '').substring(0, 7);
+    const message =
+      this.options.commitMessage ??
+      this.generateCommitMessage(Object.keys(results.entries), sha);
 
-    core.info(`Committed benchmarks update update to git (${shortSha1})`);
+    const json = JSON.stringify(results, null, 2);
+    const content = Buffer.from(json, 'utf8').toString('base64');
 
-    if (this.options.repo) {
-      await this.execGit(['push', '-u', 'origin', branch], true);
-      core.info(`Pushed changes to repository (${this.options.repo})`);
+    const octokit = github.getOctokit(this.options.accessToken, {
+      baseUrl: this.options.apiUrl,
+    });
+
+    try {
+      const { data: commit } =
+        await octokit.rest.repos.createOrUpdateFileContents({
+          owner,
+          repo,
+          branch,
+          path: fileName,
+          sha: sha ?? undefined,
+          message,
+          content,
+        });
+
+      core.info(
+        `Updated ${fileName} in ${repo}@${branch}. Commit SHA ${commit.content?.sha?.substring(0, 7)}.`
+      );
+      return true;
+    } catch (error: any) {
+      if (error['status'] === 409) {
+        return false;
+      }
+      throw error;
+    }
+  }
+
+  private mergeResults(
+    existingData: BenchmarksData,
+    results: Record<string, BenchmarkDotNetResults>,
+    commit: Commit
+  ): BenchmarksData {
+    const mergedData = { ...existingData, lastUpdated: Date.now() };
+
+    for (const fileName in results) {
+      const result = results[fileName];
+      const suiteName = this.options.name ?? result.Title.split('-')[0];
+      const suite = mergedData.entries[suiteName] ?? [];
+
+      let items: BenchmarkResult[] = [];
+
+      for (const benchmark of result.Benchmarks) {
+        const item: BenchmarkResult = {
+          name: benchmark.FullName,
+          value: benchmark.Statistics.Mean,
+          unit: 'ns',
+          range: `± ${benchmark.Statistics.StandardDeviation}`,
+        };
+
+        if (benchmark.Memory) {
+          item.allocated = benchmark.Memory.BytesAllocatedPerOperation;
+        }
+
+        items.push(item);
+      }
+
+      if (this.options.maxItems && items.length > this.options.maxItems) {
+        items = items.slice(items.length - this.options.maxItems);
+      }
+
+      suite.push({
+        commit,
+        date: Date.now(),
+        benches: items,
+      });
+
+      mergedData.entries[suiteName] = suite;
     }
 
-    return branch;
+    return existingData;
+  }
+
+  private async publishResults(
+    benchmarks: Record<string, BenchmarkDotNetResults>
+  ): Promise<void> {
+    const commit = await this.getCurrentCommit();
+
+    let attempts = 0;
+    const maxRetries = 3;
+
+    while (attempts < maxRetries) {
+      const { data, sha } = await this.getCurrentResults();
+      const merged = this.mergeResults(data, benchmarks, commit);
+      if (await this.updateResults(sha, merged)) {
+        return;
+      }
+
+      attempts++;
+    }
+
+    throw new Error(`Failed to update results after ${maxRetries} attempts.`);
+  }
+
+  private async getCurrentCommit(): Promise<Commit> {
+    if (!this.options.runRepo) {
+      throw new Error(
+        'Failed to determine the repository to use for the current Git commit.'
+      );
+    }
+    const [owner, repo] = this.options.runRepo.split('/');
+    const ref = this.options.sha;
+
+    const octokit = github.getOctokit(this.options.accessToken, {
+      baseUrl: this.options.apiUrl,
+    });
+
+    const { data: commit } = await octokit.rest.repos.getCommit({
+      owner,
+      repo,
+      ref,
+    });
+
+    return {
+      author: {
+        username: commit.author?.login,
+      },
+      committer: {
+        username: commit.committer?.login,
+      },
+      sha: commit.sha,
+      message: commit.commit.message,
+      timestamp: commit.commit.committer?.date,
+      url: commit.html_url,
+    };
   }
 }
 
-class NullWritable extends Writable {
-  _write(
-    _chunk: any,
-    _encoding: string,
-    callback: (error?: Error | null) => void
-  ): void {
-    callback();
-  }
-  _writev(
-    _chunks: { chunk: any; encoding: string }[],
-    callback: (error?: Error | null) => void
-  ): void {
-    callback();
-  }
+export interface Benchmark {
+  commit: Commit;
+  date: number;
+  benches: BenchmarkResult[];
 }
 
 interface BenchmarkResult {
   name: string;
+  value: number;
+  range?: string;
+  unit: string;
+  allocated?: number;
 }
 
 interface BenchmarkDotnetBenchmark {
@@ -296,8 +341,37 @@ interface BenchmarkDotnetBenchmark {
     StandardDeviation: number;
     Mean: number;
   };
+  Memory?: {
+    Gen0Collections: number;
+    Gen1Collections: number;
+    Gen2Collections: number;
+    TotalOperations: number;
+    BytesAllocatedPerOperation: number;
+  };
 }
 
 interface BenchmarkDotNetResults {
+  Title: string;
   Benchmarks: BenchmarkDotnetBenchmark[];
+}
+
+interface GitHubUser {
+  username?: string;
+}
+
+interface Commit {
+  author: GitHubUser;
+  committer: GitHubUser;
+  sha: string;
+  message: string;
+  timestamp?: string;
+  url: string;
+}
+
+type BenchmarkSuites = { [name: string]: Benchmark[] };
+
+interface BenchmarksData {
+  lastUpdated: number;
+  repoUrl: string;
+  entries: BenchmarkSuites;
 }

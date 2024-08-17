@@ -18,6 +18,7 @@ export async function run(): Promise<void> {
       apiUrl: context.apiUrl,
       branch: core.getInput('branch', { required: false }),
       commitMessage: core.getInput('commit-message', { required: false }),
+      name: core.getInput('name', { required: false }),
       outputFilePath: core.getInput('output-file-path', { required: false }),
       repo:
         core.getInput('repo', { required: false }) ??
@@ -27,8 +28,7 @@ export async function run(): Promise<void> {
       runId: context.runId.toString(10),
       runRepo: process.env.GITHUB_REPOSITORY,
       serverUrl: context.serverUrl,
-      userEmail: core.getInput('user-email', { required: false }),
-      userName: core.getInput('user-name', { required: false }),
+      sha: context.sha,
     };
 
     const maxItemsString = core.getInput('maxItems', { required: false });
@@ -37,7 +37,7 @@ export async function run(): Promise<void> {
     }
 
     const publisher = new BenchmarksPublisher(options);
-    await publisher.publishResults();
+    await publisher.publish();
   } catch (error: any) {
     core.error('Failed to publish benchmark results.');
     core.error(error);
