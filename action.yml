@@ -12,7 +12,10 @@ inputs:
     description: 'The optional Git commit message to use.'
     required: false
   max-items:
-    description: 'The optional maximum number of datapoints to include the results file.'
+    description: 'The optional maximum number of results to include for each suite of benchmark results.'
+    required: false
+  name:
+    description: 'The optional name to use to group the benchmark results that are found into suites.'
     required: false
   output-file-path:
     description: 'The optional path of the file to write the results to.'

@@ -18,7 +18,7 @@ describe.skip('benchmarkdotnet-results-publisher', () => {
         await setup('scenarios');
         fixture = new ActionFixture();
 
-        await fixture.initialize();
+        await fixture.initialize(name);
 
         await fixture.run();
       }, timeout);

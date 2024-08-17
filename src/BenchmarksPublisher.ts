@@ -25,11 +25,13 @@ export class BenchmarksPublisher {
   }
 
   private async findJsonResults(): Promise<string[]> {
+    let cwd = this.options.resultsPath;
+    if (!cwd) {
+      cwd = path.join(this.options.repoPath, 'BenchmarkDotNet.Artifacts');
+    }
     return await glob(['**/*-report-full-compressed.json'], {
       absolute: true,
-      cwd:
-        this.options.resultsPath ??
-        path.join(this.options.repoPath, 'BenchmarkDotNet.Artifacts'),
+      cwd,
       nodir: true,
       realpath: true,
     });
@@ -81,16 +83,24 @@ export class BenchmarksPublisher {
   }
 
   private getBranch(): string {
-    return this.options.branch ?? 'gh-pages';
+    let branch = this.options.branch;
+    if (!branch) {
+      branch = 'gh-pages';
+    }
+    return branch;
   }
 
   private getResultsPath(): string {
-    return this.options.outputFilePath ?? 'data.json';
+    let filePath = this.options.outputFilePath;
+    if (!filePath) {
+      filePath = 'data.json';
+    }
+    return filePath;
   }
 
   private async getCurrentResults(): Promise<{
     data: BenchmarksData;
-    sha: string;
+    sha: string | undefined;
   }> {
     const [owner, repo] = this.options.repo.split('/');
     const ref = this.getBranch();
@@ -136,7 +146,7 @@ export class BenchmarksPublisher {
             repoUrl: `${this.options.serverUrl}/${this.options.runRepo}`,
             entries: {},
           },
-          sha: '',
+          sha: undefined,
         };
       }
       throw error;
@@ -146,8 +156,8 @@ export class BenchmarksPublisher {
   private generateCommitMessage(names: string[], sha: string): string {
     const messageLines = [
       names.length > 1
-        ? `Publish results for ${names.length} benchmarks`
-        : `Publish results for ${names[0]}`,
+        ? `Publish ${names.length} benchmarks results for ${this.options.runRepo}`
+        : `Publish benchmarks results for ${this.options.runRepo}`,
       '',
     ];
 
@@ -179,16 +189,20 @@ export class BenchmarksPublisher {
   }
 
   private async updateResults(
-    sha: string,
+    sha: string | undefined,
     results: BenchmarksData
   ): Promise<boolean> {
     const [owner, repo] = this.options.repo.split('/');
     const branch = this.getBranch();
     const fileName = this.getResultsPath();
 
-    const message =
-      this.options.commitMessage ??
-      this.generateCommitMessage(Object.keys(results.entries), sha);
+    let message = this.options.commitMessage;
+    if (!message) {
+      message = this.generateCommitMessage(
+        Object.keys(results.entries),
+        this.options.sha
+      );
+    }
 
     const json = JSON.stringify(results, null, 2);
     const content = Buffer.from(json, 'utf8').toString('base64');
@@ -204,7 +218,7 @@ export class BenchmarksPublisher {
           repo,
           branch,
           path: fileName,
-          sha: sha ?? undefined,
+          sha,
           message,
           content,
         });
@@ -226,14 +240,20 @@ export class BenchmarksPublisher {
     results: Record<string, BenchmarkDotNetResults>,
     commit: Commit
   ): BenchmarksData {
-    const mergedData = { ...existingData, lastUpdated: Date.now() };
+    const now = Date.now();
+    const mergedData = { ...existingData, lastUpdated: now };
 
     for (const fileName in results) {
       const result = results[fileName];
-      const suiteName = this.options.name ?? result.Title.split('-')[0];
-      const suite = mergedData.entries[suiteName] ?? [];
 
-      let items: BenchmarkResult[] = [];
+      let suiteName = this.options.name;
+      if (!suiteName) {
+        suiteName = result.Title.split('-')[0];
+      }
+
+      let suite = mergedData.entries[suiteName] ?? [];
+
+      const items: BenchmarkResult[] = [];
 
       for (const benchmark of result.Benchmarks) {
         const item: BenchmarkResult = {
@@ -244,26 +264,26 @@ export class BenchmarksPublisher {
         };
 
         if (benchmark.Memory) {
-          item.allocated = benchmark.Memory.BytesAllocatedPerOperation;
+          item.bytesAllocated = benchmark.Memory.BytesAllocatedPerOperation;
         }
 
         items.push(item);
       }
 
-      if (this.options.maxItems && items.length > this.options.maxItems) {
-        items = items.slice(items.length - this.options.maxItems);
-      }
-
       suite.push({
         commit,
-        date: Date.now(),
+        date: now,
         benches: items,
       });
+
+      if (this.options.maxItems && suite.length > this.options.maxItems) {
+        suite = suite.slice(suite.length - this.options.maxItems);
+      }
 
       mergedData.entries[suiteName] = suite;
     }
 
-    return existingData;
+    return mergedData;
   }
 
   private async publishResults(
@@ -332,7 +352,7 @@ interface BenchmarkResult {
   value: number;
   range?: string;
   unit: string;
-  allocated?: number;
+  bytesAllocated?: number;
 }
 
 interface BenchmarkDotnetBenchmark {

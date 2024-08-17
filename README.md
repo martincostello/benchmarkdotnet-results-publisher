@@ -55,8 +55,8 @@ jobs:
 |:--|:--|:--|
 | `branch` | The optional Git branch to push the results to. | `gh-pages` |
 | `commit-message` | The optional Git commit message to use. | - |
-| `max-items` | The optional maximum number of datapoints to include the results file. | Unlimited |
-| `name` | The optional name to use to group the benchmark results that are found. | Inferred from BenchmarkDotNet results |
+| `max-items` | The optional maximum number of results to include for each suite of benchmark results. | Unlimited |
+| `name` | The optional name to use to group the benchmark results that are found into suites. | Inferred from BenchmarkDotNet results |
 | `output-file-path` | The optional path of the file to write the results to. | `./data.json` |
 | `repo` | The optional GitHub repository to push the results to. | [`github.repository`][github-context] |
 | `repo-token` | The GitHub access token to use to push the results to a GitHub repository. | [`github.token`][github-token] |

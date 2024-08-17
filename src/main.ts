@@ -31,7 +31,7 @@ export async function run(): Promise<void> {
       sha: context.sha,
     };
 
-    const maxItemsString = core.getInput('maxItems', { required: false });
+    const maxItemsString = core.getInput('max-items', { required: false });
     if (maxItemsString) {
       options.maxItems = parseInt(maxItemsString, 10);
     }

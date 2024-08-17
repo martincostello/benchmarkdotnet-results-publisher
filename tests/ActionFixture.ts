@@ -10,26 +10,32 @@ import { jest } from '@jest/globals';
 import { run } from '../src/main';
 
 export class ActionFixture {
-  public pullNumber: string = '42';
-  public repo: string = 'martincostello/benchmarkdotnet-results-publisher';
+  public repo: string = 'martincostello/benchmark-repo';
   public stepSummary: string = '';
 
   private tempDir: string = '';
   private outputPath: string = '';
   private outputs: Record<string, string> = {};
 
-  constructor(private readonly fileExtensions = 'cshtml,html,razor') {}
+  constructor() {}
 
   get path(): string {
     return this.tempDir;
   }
 
-  async initialize(
-    testFiles: { path: string; data: string }[] = []
-  ): Promise<void> {
+  async initialize(fixture: string): Promise<void> {
     this.tempDir = await this.createTemporaryDirectory();
-    this.outputPath = path.join(this.tempDir, 'github-outputs');
 
+    const source = path.join(
+      __dirname,
+      'fixtures',
+      fixture,
+      'BenchmarkDotNet.Artifacts'
+    );
+    const destination = path.join(this.tempDir);
+    await io.cp(source, destination, { recursive: true });
+
+    this.outputPath = path.join(this.tempDir, 'github-outputs');
     await this.createEmptyFile(this.outputPath);
 
     this.setupEnvironment();
@@ -78,13 +84,11 @@ export class ActionFixture {
       'GITHUB_REPOSITORY': this.repo,
       'GITHUB_RUN_ID': '123',
       'GITHUB_SERVER_URL': 'https://github.local',
-      'INPUT_FILE-EXTENSIONS': this.fileExtensions,
-      'INPUT_LABELS': 'foo,bar',
+      'GITHUB_SHA': '0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33',
+      'GITHUB_WORKSPACE': this.tempDir,
+      'INPUT_MAX-ITEMS': '1000',
       'INPUT_REPO': this.repo,
-      'INPUT_REPO-PATH': this.tempDir,
       'INPUT_REPO-TOKEN': 'my-token',
-      'INPUT_USER-EMAIL': 'github-actions[bot]@users.noreply.github.com',
-      'INPUT_USER-NAME': 'github-actions[bot]',
     };
 
     for (const key in inputs) {
