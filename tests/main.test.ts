@@ -5,20 +5,25 @@ import * as core from '@actions/core';
 import { ActionFixture } from './ActionFixture';
 import { setup } from './fixtures';
 
-import { afterAll, beforeAll, describe, expect, test } from '@jest/globals';
+import { afterAll, beforeAll, describe, expect, jest, test } from '@jest/globals';
 
 const timeout = 45000;
 
-describe.skip('benchmarkdotnet-results-publisher', () => {
+describe('benchmarkdotnet-results-publisher', () => {
+
+  beforeAll(() => {
+    Date.now = jest.fn(() => new Date(Date.UTC(2024, 7, 17, 12, 34, 56)).valueOf())
+  });
+
   describe('when publishing', () => {
-    describe.each([['many-benchmarks']])('results for %s', (name: string) => {
+    describe.each([['new-benchmark']])('results for %s', (scenario: string) => {
       let fixture: ActionFixture;
 
       beforeAll(async () => {
-        await setup('scenarios');
+        await setup(scenario);
         fixture = new ActionFixture();
 
-        await fixture.initialize(name);
+        await fixture.initialize(scenario);
 
         await fixture.run();
       }, timeout);
