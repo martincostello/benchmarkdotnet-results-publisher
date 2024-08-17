@@ -8,20 +8,6 @@ This action publishes results from [BenchmarkDotNet][benchmarkdotnet] benchmarks
 
 This action was inspired by the [benchmark-action/github-action-benchmark][github-action-benchmark] action.
 
-<!--
-
-Documention TODO:
-- Warn to not use on pull requests to commit to the same branch to avoid circular workflows
-- Add a note about the GitHub token being required to be able to push to the repository if not the same repository
-
-Features TODO:
-- Comment on commits if threshold (time or memory) exceeded
-- Comment on pull request source if threshold (time or memory) exceeded
-- Fail the workflow if threshold exceeded
-- Output GITHUB_STEP_SUMMARY of the `*-report.github.md` files
-
--->
-
 ## Example Usage
 
 Below is an example of a full GitHub Actions workflow to run the benchmarks in a .NET

@@ -211,6 +211,7 @@ export class BenchmarksPublisher {
       baseUrl: this.options.apiUrl,
     });
 
+    // TODO Create the branch if it does not exist
     try {
       const { data: commit } =
         await octokit.rest.repos.createOrUpdateFileContents({
