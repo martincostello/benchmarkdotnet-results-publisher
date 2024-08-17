@@ -79,7 +79,7 @@ The repository is hosted in [GitHub][repo]: <https://github.com/martincostello/b
 This project is licensed under the [Apache 2.0][license] license.
 
 [benchmarkdotnet]: https://github.com/dotnet/BenchmarkDotNet "BenchmarkDotNet on GitHub.com"
-[build-badge]: https://github.com/martincostello/benchmarkdotnet-results-publisher/workflows/build.yml/badge.svg?branch=main&event=push
+[build-badge]: https://github.com/martincostello/benchmarkdotnet-results-publisher/actions/workflows/build.yml/badge.svg?branch=main&event=push
 [build-status]: https://github.com/martincostello/benchmarkdotnet-results-publisher/actions?query=workflow%3Abuild+branch%3Amain+event%3Apush "Continuous Integration for this project"
 [coverage-badge]: https://codecov.io/gh/martincostello/benchmarkdotnet-results-publisher/branch/main/graph/badge.svg
 [coverage-report]: https://codecov.io/gh/martincostello/benchmarkdotnet-results-publisher "Code coverage report for this project"
