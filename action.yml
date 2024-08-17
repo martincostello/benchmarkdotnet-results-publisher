@@ -1,0 +1,36 @@
+name: 'Benchmarkdotnet Results Publisher'
+description: 'Publishes results from BenchmarkDotNet benchmarks to a GitHub repository.'
+author: 'Martin Costello'
+branding:
+  icon: 'trending-down'
+  color: 'green'
+inputs:
+  branch:
+    description: 'The optional Git branch to push the results to.'
+    required: false
+  commit-message:
+    description: 'The optional Git commit message to use.'
+    required: false
+  max-items:
+    description: 'The optional maximum number of results to include for each suite of benchmark results.'
+    required: false
+  name:
+    description: 'The optional name to use to group the benchmark results that are found into suites.'
+    required: false
+  output-file-path:
+    description: 'The optional path of the file to write the results to.'
+    required: false
+  repo:
+    description: 'The optional GitHub repository to push the results to.'
+    required: false
+    default: ${{ github.repository }}
+  repo-token:
+    description: 'The GitHub access token to use to push the results to a GitHub repository.'
+    required: false
+    default: ${{ github.token }}
+  results-path:
+    description: 'The optional path of the BenchmarkDotNet results directory to process.'
+    required: false
+runs:
+  using: 'node20'
+  main: 'dist/main.js'

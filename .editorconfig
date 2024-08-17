@@ -1,0 +1,15 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = crlf
+indent_size = 4
+indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{js,json,ts}]
+indent_size = 2
+
+[*.ts]
+file_header_template = Copyright (c) Martin Costello, 2024. All rights reserved.\nLicensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
