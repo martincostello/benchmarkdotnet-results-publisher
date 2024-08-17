@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "npm test",
+      "preLaunchTask": "build",
+      "request": "launch",
+      "runtimeArgs": [
+        "run-script",
+        "test"
+      ],
+      "runtimeExecutable": "npm",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "type": "node"
+    }
+  ]
+}

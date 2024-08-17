@@ -1,0 +1,104 @@
+name: build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  FORCE_COLOR: 1
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    permissions:
+      attestations: write
+      contents: read
+      id-token: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            os-name: macos
+          - os: ubuntu-latest
+            os-name: linux
+          - os: windows-latest
+            os-name: windows
+
+    steps:
+
+    - name: Checkout code
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+    - name: Setup Node
+      uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+      with:
+        node-version: '20.x'
+
+    - name: Get npm cache directory
+      id: npm-cache-dir
+      shell: pwsh
+      run: echo "dir=$(npm config get cache)" >> ${env:GITHUB_OUTPUT}
+
+    - name: Setup npm cache
+      uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+      id: npm-cache
+      with:
+        path: ${{ steps.npm-cache-dir.outputs.dir }}
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: ${{ runner.os }}-node-
+
+    - name: Install packages
+      run: npm ci
+
+    - name: Build and Test
+      shell: pwsh
+      run: ./build.ps1
+
+    - uses: codecov/codecov-action@e28ff129e5465c2c0dcc6f003fc735cb6ae0c673 # v4.5.0
+      name: Upload coverage to Codecov
+      with:
+        file: ./coverage/lcov.info
+        flags: ${{ matrix.os-name }}
+        token: ${{ secrets.CODECOV_TOKEN }}
+
+    - name: Generate SBOM
+      uses: anchore/sbom-action@ab9d16d4b419c9d1a02df5213fa0ebe965ca5a57 # v0.17.1
+      if: runner.os == 'Linux'
+      with:
+        artifact-name: benchmarkdotnet-results-publisher.spdx.json
+        output-file: benchmarkdotnet-results-publisher.spdx.json
+        path: .
+
+    - name: Attest dist
+      uses: actions/attest-build-provenance@310b0a4a3b0b78ef57ecda988ee04b132db73ef8 # v1.4.1
+      if: |
+        runner.os == 'Linux' &&
+        github.ref_name == github.event.repository.default_branch
+      with:
+        subject-path: ./dist/**/*.js
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Checkout code
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+    - name: Add actionlint problem matcher
+      run: echo "::add-matcher::.github/actionlint-matcher.json"
+
+    - name: Lint workflows
+      uses: docker://rhysd/actionlint@sha256:5acca218639222e4afbc82fc6e9ef56cbe646ade3b07f3f5ec364b638258a244 # v1.7.0
+      with:
+        args: -color
