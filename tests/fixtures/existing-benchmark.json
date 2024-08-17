@@ -1,0 +1,73 @@
+{
+  "scenarios": [
+    {
+      "basePath": "https://github.local",
+      "path": "/api/v3/repos/martincostello/benchmark-repo/commits/0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33",
+      "response": {
+        "sha": "0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33",
+        "commit": {
+          "author": {
+            "name": "Martin Costello",
+            "email": "martin@martincostello.com",
+            "date": "2024-08-17T07:22:30Z"
+          },
+          "committer": {
+            "name": "GitHub",
+            "email": "noreply@github.com",
+            "date": "2024-08-17T07:22:30Z"
+          },
+          "message": "Update code\n\nUpdate the code to fix a bug."
+        },
+        "url": "https://github.local/api/v3/repos/martincostello/benchmark-repo/commits/0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33",
+        "html_url": "https://github.local/martincostello/benchmark-repo/commit/0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33",
+        "author": {
+          "login": "martincostello"
+        },
+        "committer": {
+          "login": "web-flow"
+        }
+      }
+    },
+    {
+      "basePath": "https://github.local",
+      "path": "/api/v3/repos/martincostello/benchmark-repo/contents/data.json?ref=gh-pages",
+      "headers": {
+        "authorization": "token my-token"
+      },
+      "response": {
+        "sha": "742e03b5d9ae5b166ca116078a7bf85c41940472",
+        "content": "ewogICJsYXN0VXBkYXRlZCI6IDE3MjM5MTQ4MDUwNTUsCiAgInJlcG9VcmwiOiAiaHR0cHM6Ly9naXRodWIuY29tL21hcnRpbmNvc3RlbGxvL2JlbmNobWFyay1wbGF5Z3JvdW5kIiwKICAiZW50cmllcyI6IHsKICAgICJNYXJ0aW5Db3N0ZWxsby5Qcm9qZWN0RXVsZXIuQmVuY2htYXJrcy5QdXp6bGVCZW5jaG1hcmtzIjogWwogICAgICB7CiAgICAgICAgImNvbW1pdCI6IHsKICAgICAgICAgICJhdXRob3IiOiB7CiAgICAgICAgICAgICJ1c2VybmFtZSI6ICJtYXJ0aW5jb3N0ZWxsbyIKICAgICAgICAgIH0sCiAgICAgICAgICAiY29tbWl0dGVyIjogewogICAgICAgICAgICAidXNlcm5hbWUiOiAid2ViLWZsb3ciCiAgICAgICAgICB9LAogICAgICAgICAgInNoYSI6ICI4YWRiY2I0MDM0Yzg2ZTIzMGU4ZjFjOGIzNDI3Mjk4OTYxYTM5MDU2IiwKICAgICAgICAgICJtZXNzYWdlIjogIkluaXRpYWwgY29tbWl0IiwKICAgICAgICAgICJ0aW1lc3RhbXAiOiAiMjAyNC0wOC0xN1QxNDo1OToxOFoiLAogICAgICAgICAgInVybCI6ICJodHRwczovL2dpdGh1Yi5jb20vbWFydGluY29zdGVsbG8vYmVuY2htYXJrLXBsYXlncm91bmQvY29tbWl0LzhhZGJjYjQwMzRjODZlMjMwZThmMWM4YjM0MjcyOTg5NjFhMzkwNTYiCiAgICAgICAgfSwKICAgICAgICAiZGF0ZSI6IDE3MjM5MTQ4MDUwNTUsCiAgICAgICAgImJlbmNoZXMiOiBbCiAgICAgICAgICB7CiAgICAgICAgICAgICJuYW1lIjogIk1hcnRpbkNvc3RlbGxvLlByb2plY3RFdWxlci5CZW5jaG1hcmtzLlB1enpsZUJlbmNobWFya3MuU29sdmUoaW5wdXQ6IDAwMSkiLAogICAgICAgICAgICAidmFsdWUiOiAyNTAwLjg2NzE0NDI2Njc2NCwKICAgICAgICAgICAgInVuaXQiOiAibnMiLAogICAgICAgICAgICAicmFuZ2UiOiAiwrEgMzQ1LjYxNDM1NDQzODA1MzU3IiwKICAgICAgICAgICAgImJ5dGVzQWxsb2NhdGVkIjogMjQKICAgICAgICAgIH0KICAgICAgICBdCiAgICAgIH0KICAgIF0KICB9Cn0=",
+        "encoding": "base64"
+      }
+    },
+    {
+      "basePath": "https://github.local",
+      "path": "/api/v3/repos/martincostello/benchmark-repo/branches/gh-pages",
+      "headers": {
+        "authorization": "token my-token"
+      },
+      "response": {
+        "name": "main",
+        "commit": {
+          "sha": "b28b7af69320201d1cf206ebf28373980add1451"
+        }
+      }
+    },
+    {
+      "basePath": "https://github.local",
+      "path": "/api/v3/repos/martincostello/benchmark-repo/contents/data.json",
+      "method": "PUT",
+      "headers": {
+        "authorization": "token my-token"
+      },
+      "body": {
+        "branch": "gh-pages",
+        "sha": "742e03b5d9ae5b166ca116078a7bf85c41940472",
+        "message": "Publish benchmarks results for martincostello/benchmark-repo\n\nPublish BenchmarkDotNet results for the MartinCostello.ProjectEuler.Benchmarks.PuzzleBenchmarks benchmark.\n\nGenerated from martincostello/benchmark-repo@0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33 by https://github.local/martincostello/benchmark-repo/actions/runs/123.\n\n---\nbenchmarks:\n- name: MartinCostello.ProjectEuler.Benchmarks.PuzzleBenchmarks\n...\n\n",
+        "content": "ewogICJsYXN0VXBkYXRlZCI6IDE3MjM4OTgwOTYwMDAsCiAgInJlcG9VcmwiOiAiaHR0cHM6Ly9naXRodWIuY29tL21hcnRpbmNvc3RlbGxvL2JlbmNobWFyay1wbGF5Z3JvdW5kIiwKICAiZW50cmllcyI6IHsKICAgICJNYXJ0aW5Db3N0ZWxsby5Qcm9qZWN0RXVsZXIuQmVuY2htYXJrcy5QdXp6bGVCZW5jaG1hcmtzIjogWwogICAgICB7CiAgICAgICAgImNvbW1pdCI6IHsKICAgICAgICAgICJhdXRob3IiOiB7CiAgICAgICAgICAgICJ1c2VybmFtZSI6ICJtYXJ0aW5jb3N0ZWxsbyIKICAgICAgICAgIH0sCiAgICAgICAgICAiY29tbWl0dGVyIjogewogICAgICAgICAgICAidXNlcm5hbWUiOiAid2ViLWZsb3ciCiAgICAgICAgICB9LAogICAgICAgICAgInNoYSI6ICI4YWRiY2I0MDM0Yzg2ZTIzMGU4ZjFjOGIzNDI3Mjk4OTYxYTM5MDU2IiwKICAgICAgICAgICJtZXNzYWdlIjogIkluaXRpYWwgY29tbWl0IiwKICAgICAgICAgICJ0aW1lc3RhbXAiOiAiMjAyNC0wOC0xN1QxNDo1OToxOFoiLAogICAgICAgICAgInVybCI6ICJodHRwczovL2dpdGh1Yi5jb20vbWFydGluY29zdGVsbG8vYmVuY2htYXJrLXBsYXlncm91bmQvY29tbWl0LzhhZGJjYjQwMzRjODZlMjMwZThmMWM4YjM0MjcyOTg5NjFhMzkwNTYiCiAgICAgICAgfSwKICAgICAgICAiZGF0ZSI6IDE3MjM5MTQ4MDUwNTUsCiAgICAgICAgImJlbmNoZXMiOiBbCiAgICAgICAgICB7CiAgICAgICAgICAgICJuYW1lIjogIk1hcnRpbkNvc3RlbGxvLlByb2plY3RFdWxlci5CZW5jaG1hcmtzLlB1enpsZUJlbmNobWFya3MuU29sdmUoaW5wdXQ6IDAwMSkiLAogICAgICAgICAgICAidmFsdWUiOiAyNTAwLjg2NzE0NDI2Njc2NCwKICAgICAgICAgICAgInVuaXQiOiAibnMiLAogICAgICAgICAgICAicmFuZ2UiOiAiwrEgMzQ1LjYxNDM1NDQzODA1MzU3IiwKICAgICAgICAgICAgImJ5dGVzQWxsb2NhdGVkIjogMjQKICAgICAgICAgIH0KICAgICAgICBdCiAgICAgIH0sCiAgICAgIHsKICAgICAgICAiY29tbWl0IjogewogICAgICAgICAgImF1dGhvciI6IHsKICAgICAgICAgICAgInVzZXJuYW1lIjogIm1hcnRpbmNvc3RlbGxvIgogICAgICAgICAgfSwKICAgICAgICAgICJjb21taXR0ZXIiOiB7CiAgICAgICAgICAgICJ1c2VybmFtZSI6ICJ3ZWItZmxvdyIKICAgICAgICAgIH0sCiAgICAgICAgICAic2hhIjogIjBiZWVjN2I1ZWEzZjBmZGJjOTVkMGRkNDdmM2M1YmMyNzVkYThhMzMiLAogICAgICAgICAgIm1lc3NhZ2UiOiAiVXBkYXRlIGNvZGVcblxuVXBkYXRlIHRoZSBjb2RlIHRvIGZpeCBhIGJ1Zy4iLAogICAgICAgICAgInRpbWVzdGFtcCI6ICIyMDI0LTA4LTE3VDA3OjIyOjMwWiIsCiAgICAgICAgICAidXJsIjogImh0dHBzOi8vZ2l0aHViLmxvY2FsL21hcnRpbmNvc3RlbGxvL2JlbmNobWFyay1yZXBvL2NvbW1pdC8wYmVlYzdiNWVhM2YwZmRiYzk1ZDBkZDQ3ZjNjNWJjMjc1ZGE4YTMzIgogICAgICAgIH0sCiAgICAgICAgImRhdGUiOiAxNzIzODk4MDk2MDAwLAogICAgICAgICJiZW5jaGVzIjogWwogICAgICAgICAgewogICAgICAgICAgICAibmFtZSI6ICJNYXJ0aW5Db3N0ZWxsby5Qcm9qZWN0RXVsZXIuQmVuY2htYXJrcy5QdXp6bGVCZW5jaG1hcmtzLlNvbHZlKGlucHV0OiAwMDEpIiwKICAgICAgICAgICAgInZhbHVlIjogMjUwMC44NjcxNDQyNjY3NjQsCiAgICAgICAgICAgICJ1bml0IjogIm5zIiwKICAgICAgICAgICAgInJhbmdlIjogIsKxIDM0NS42MTQzNTQ0MzgwNTM1NyIsCiAgICAgICAgICAgICJieXRlc0FsbG9jYXRlZCI6IDI0CiAgICAgICAgICB9CiAgICAgICAgXQogICAgICB9CiAgICBdCiAgfQp9"
+      },
+      "status": 201,
+      "response": {}
+    }
+  ]
+}

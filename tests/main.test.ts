@@ -5,35 +5,47 @@ import * as core from '@actions/core';
 import { ActionFixture } from './ActionFixture';
 import { setup } from './fixtures';
 
-import { afterAll, beforeAll, describe, expect, test } from '@jest/globals';
+import {
+  afterAll,
+  beforeAll,
+  describe,
+  expect,
+  jest,
+  test,
+} from '@jest/globals';
 
 const timeout = 45000;
 
-describe.skip('benchmarkdotnet-results-publisher', () => {
+describe('benchmarkdotnet-results-publisher', () => {
+  beforeAll(() => {
+    Date.now = jest.fn(() =>
+      new Date(Date.UTC(2024, 7, 17, 12, 34, 56)).valueOf()
+    );
+  });
+
   describe('when publishing', () => {
-    describe.each([['many-benchmarks']])('results for %s', (name: string) => {
-      let fixture: ActionFixture;
+    describe.each([['new-benchmark'], ['existing-benchmark']])(
+      'results for %s',
+      (scenario: string) => {
+        let fixture: ActionFixture;
 
-      beforeAll(async () => {
-        await setup('scenarios');
-        fixture = new ActionFixture();
+        beforeAll(async () => {
+          await setup(scenario);
+          fixture = new ActionFixture();
 
-        await fixture.initialize(name);
+          await fixture.initialize(scenario);
 
-        await fixture.run();
-      }, timeout);
+          await fixture.run();
+        }, timeout);
 
-      afterAll(async () => {
-        await fixture?.destroy();
-      });
+        afterAll(async () => {
+          await fixture?.destroy();
+        });
 
-      test('does not log any errors', () => {
-        expect(core.error).toHaveBeenCalledTimes(0);
-      });
-
-      test('does not fail', () => {
-        expect(core.setFailed).toHaveBeenCalledTimes(0);
-      });
-    });
+        test('does not log any errors', () => {
+          expect(fixture.getErrors()).toEqual([]);
+        });
+      }
+    );
   });
 });

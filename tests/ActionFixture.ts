@@ -13,6 +13,7 @@ export class ActionFixture {
   public repo: string = 'martincostello/benchmark-repo';
   public stepSummary: string = '';
 
+  private errors: (string | Error)[] = [];
   private tempDir: string = '';
   private outputPath: string = '';
   private outputs: Record<string, string> = {};
@@ -61,6 +62,10 @@ export class ActionFixture {
     } catch {
       console.log(`Failed to remove fixture directory '${this.path}'.`);
     }
+  }
+
+  getErrors(): (string | Error)[] {
+    return this.errors;
   }
 
   getOutput(name: string): string {
@@ -123,6 +128,7 @@ export class ActionFixture {
     });
     jest.spyOn(core, 'error').mockImplementation((arg) => {
       logger('error', arg);
+      this.errors.push(arg);
     });
 
     jest.spyOn(core.summary, 'addRaw').mockImplementation((text: string) => {

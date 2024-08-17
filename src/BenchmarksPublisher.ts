@@ -212,6 +212,8 @@ export class BenchmarksPublisher {
     });
 
     try {
+      await this.ensureBranch(owner, repo, branch);
+
       const { data: commit } =
         await octokit.rest.repos.createOrUpdateFileContents({
           owner,
@@ -232,6 +234,51 @@ export class BenchmarksPublisher {
         return false;
       }
       throw error;
+    }
+  }
+
+  private async ensureBranch(
+    owner: string,
+    repo: string,
+    branch: string
+  ): Promise<void> {
+    const octokit = github.getOctokit(this.options.accessToken, {
+      baseUrl: this.options.apiUrl,
+    });
+
+    let exists: boolean;
+
+    try {
+      await octokit.rest.repos.getBranch({
+        owner,
+        repo,
+        branch,
+      });
+      exists = true;
+    } catch (error: any) {
+      if (error['status'] === 404) {
+        exists = false;
+      } else {
+        throw error;
+      }
+    }
+
+    if (!exists) {
+      const { data: repository } = await octokit.rest.repos.get({
+        owner,
+        repo,
+      });
+      const { data: defaultBranch } = await octokit.rest.repos.getBranch({
+        owner,
+        repo,
+        branch: repository.default_branch,
+      });
+      await octokit.rest.git.createRef({
+        owner,
+        repo,
+        ref: `refs/heads/${branch}`,
+        sha: defaultBranch.commit.sha,
+      });
     }
   }
 
