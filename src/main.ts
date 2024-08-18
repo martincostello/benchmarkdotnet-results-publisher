@@ -18,6 +18,8 @@ export async function run(): Promise<void> {
       apiUrl: context.apiUrl,
       branch: core.getInput('branch', { required: false }),
       commitMessage: core.getInput('commit-message', { required: false }),
+      failOnThreshold:
+        core.getInput('fail-on-threshold', { required: false }) === 'true',
       name: core.getInput('name', { required: false }),
       outputFilePath: core.getInput('output-file-path', { required: false }),
       outputStepSummary:
@@ -32,6 +34,20 @@ export async function run(): Promise<void> {
       serverUrl: context.serverUrl,
       sha: context.sha,
     };
+
+    let threshold = core.getInput('fail-threshold-duration', {
+      required: false,
+    });
+    if (threshold) {
+      options.failThresholdDuration = parseFloat(threshold);
+    }
+
+    threshold = core.getInput('fail-threshold-memory', {
+      required: false,
+    });
+    if (threshold) {
+      options.failThresholdMemory = parseFloat(threshold);
+    }
 
     const maxItemsString = core.getInput('max-items', { required: false });
     if (maxItemsString) {

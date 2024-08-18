@@ -23,10 +23,16 @@ export class BenchmarksPublisher {
       core.info(
         `Found ${count} BenchmarkDotNet result${count === 1 ? '' : 's'}.`
       );
-      await this.publishResults(benchmarks);
+      const deltas = await this.publishResults(benchmarks);
 
       if (this.options.outputStepSummary) {
         await this.generateSummary();
+      }
+
+      if (this.options.failOnThreshold) {
+        if (await this.processDeltas(deltas)) {
+          core.setFailed(`One or more benchmarks' values have regressed.`);
+        }
       }
     } else {
       core.warning('No BenchmarkDotNet results found to publish.');
@@ -121,6 +127,10 @@ export class BenchmarksPublisher {
     return filePath;
   }
 
+  private getWorkflowRunUrl(): string {
+    return `${this.options.serverUrl}/${this.options.runRepo}/actions/runs/${this.options.runId}`;
+  }
+
   private async getCurrentResults(): Promise<{
     data: BenchmarksData;
     sha: string | undefined;
@@ -198,7 +208,7 @@ export class BenchmarksPublisher {
 
     messageLines.push(
       '',
-      `Generated from ${this.options.runRepo}@${sha} by ${this.options.serverUrl}/${this.options.runRepo}/actions/runs/${this.options.runId}.`,
+      `Generated from ${this.options.runRepo}@${sha} by ${this.getWorkflowRunUrl()}.`,
       '',
       '---',
       'benchmarks:'
@@ -361,7 +371,7 @@ export class BenchmarksPublisher {
 
   private async publishResults(
     benchmarks: Record<string, BenchmarkDotNetResults>
-  ): Promise<void> {
+  ): Promise<Record<string, BenchmarksDelta[]>> {
     const commit = await this.getCurrentCommit();
 
     let attempts = 0;
@@ -371,7 +381,36 @@ export class BenchmarksPublisher {
       const { data, sha } = await this.getCurrentResults();
       const merged = this.mergeResults(data, benchmarks, commit);
       if (await this.updateResults(sha, merged)) {
-        return;
+        const results: Record<string, BenchmarksDelta[]> = {};
+
+        for (const suiteName in merged.entries) {
+          const suite = merged.entries[suiteName];
+
+          const currentBenchmark = suite[suite.length - 1];
+          const previousBenchmark =
+            suite.length > 1 ? suite[suite.length - 2] : null;
+
+          const deltas: BenchmarksDelta[] = [];
+
+          for (const current of currentBenchmark.benches) {
+            const previous = previousBenchmark?.benches.find(
+              (b) => b.name === current.name
+            );
+
+            if (!previous) {
+              continue;
+            }
+
+            deltas.push({
+              current,
+              previous,
+            });
+          }
+
+          results[suiteName] = deltas;
+        }
+
+        return results;
       }
 
       attempts++;
@@ -444,6 +483,193 @@ export class BenchmarksPublisher {
 
     return result;
   }
+
+  private async processDeltas(
+    deltas: Record<string, BenchmarksDelta[]>
+  ): Promise<boolean> {
+    const durationThreshold = this.options.failThresholdDuration ?? 2;
+    const memoryThreshold = this.options.failThresholdMemory ?? 2;
+
+    let hasRegressions = false;
+    const regressions: Record<string, BenchmarkRegression[]> = {};
+
+    for (const suiteName in deltas) {
+      const suite = deltas[suiteName];
+      const suiteRegressions: BenchmarkRegression[] = [];
+
+      for (const delta of suite) {
+        const current = delta.current;
+        const previous = delta.previous;
+
+        if (!previous || previous.value === 0) {
+          continue;
+        }
+
+        const durationDelta = current.value - previous.value;
+        const durationRatio = durationDelta / previous.value;
+        const durationPercentage = durationRatio * 100;
+
+        if (core.isDebug() && current.value !== previous.value) {
+          core.debug(
+            `Benchmark '${current.name}' from suite ${suiteName} changed by ${durationDelta.toFixed(2)} ns (${durationPercentage.toFixed(2)}%)`
+          );
+        }
+
+        if (durationRatio > durationThreshold) {
+          core.warning(
+            `Benchmark '${current.name}' from suite ${suiteName} has regressed by ${durationDelta.toFixed(2)} ns (${durationPercentage.toFixed(2)}%)`
+          );
+          suiteRegressions.push({
+            name: current.name,
+            type: 'duration',
+            current: current.value,
+            previous: previous.value,
+            percentage: durationPercentage,
+            ratio: durationRatio,
+          });
+        }
+
+        if (current.bytesAllocated && previous.bytesAllocated) {
+          const memoryDelta = current.bytesAllocated - previous.bytesAllocated;
+          const memoryRatio = memoryDelta / previous.bytesAllocated;
+          const memoryPercentage = memoryRatio * 100;
+
+          if (
+            core.isDebug() &&
+            current.bytesAllocated !== previous.bytesAllocated
+          ) {
+            core.debug(
+              `Benchmark '${current.name}' from suite ${suiteName} changed by ${memoryDelta.toFixed(2)} bytes (${memoryPercentage.toFixed(2)}%)`
+            );
+          }
+
+          if (memoryRatio > memoryThreshold) {
+            core.warning(
+              `Benchmark '${current.name}' from suite ${suiteName} has regressed by ${memoryDelta.toFixed(2)} bytes (${memoryPercentage.toFixed(2)}%)`
+            );
+            suiteRegressions.push({
+              name: current.name,
+              type: 'memory',
+              current: current.bytesAllocated,
+              previous: previous.bytesAllocated,
+              percentage: memoryPercentage,
+              ratio: memoryRatio,
+            });
+          }
+        }
+      }
+
+      regressions[suiteName] = suiteRegressions;
+      hasRegressions = hasRegressions || suiteRegressions.length > 0;
+    }
+
+    if (hasRegressions) {
+      await this.leaveComment(regressions);
+    }
+
+    return hasRegressions;
+  }
+
+  private async leaveComment(
+    suiteRegressions: Record<string, BenchmarkRegression[]>
+  ): Promise<void> {
+    const comment = [
+      '### Performance Regression :warning::chart_with_upwards_trend:',
+      '',
+      `Performance regressions have been found in ${Object.keys(suiteRegressions).length} BenchmarkDotNet suites.`,
+      '',
+    ];
+
+    const formatValues = (
+      previous: number,
+      current: number,
+      type: RegressionType
+    ): {
+      previous: string;
+      current: string;
+    } => {
+      let minValue = Math.min(previous, current);
+      const factor = 1e-3;
+      const units = type === 'memory' ? ['KB', 'MB', 'GB'] : ['µs', 'ms', 's'];
+      let unit = type === 'memory' ? 'bytes' : 'ns';
+
+      for (const nextUnit of units) {
+        if (minValue < 1000) {
+          break;
+        }
+        minValue *= factor;
+        previous *= factor;
+        current *= factor;
+        unit = nextUnit;
+      }
+
+      const formatValue = (value: number): string => {
+        if (Number.isInteger(value)) {
+          return value.toFixed(0);
+        }
+
+        if (value > 0.1) {
+          return value.toFixed(2);
+        }
+
+        return value.toString();
+      };
+
+      return {
+        previous: `${formatValue(previous)} ${unit}`,
+        current: `${formatValue(current)} ${unit}`,
+      };
+    };
+
+    for (const suiteName in suiteRegressions) {
+      const regressions = suiteRegressions[suiteName];
+
+      if (regressions.length < 1) {
+        continue;
+      }
+
+      comment.push(
+        `#### ${suiteName}`,
+        '',
+        '| Benchmark | Type | Previous | Current | Ratio |',
+        '|-----------|------|---------:|--------:|------:|'
+      );
+
+      for (const regression of regressions) {
+        const benchmarkName = regression.name.replace(`${suiteName}.`, '');
+        const type = regression.type === 'memory' ? 'Allocations' : 'Duration';
+        const ratio = regression.ratio.toFixed(2);
+
+        const { previous, current } = formatValues(
+          regression.previous,
+          regression.current,
+          regression.type
+        );
+
+        comment.push(
+          `| ${benchmarkName} | ${type} | ${previous} | ${current} | ${ratio} |`
+        );
+      }
+
+      comment.push('');
+    }
+
+    const watermark =
+      '<!-- martincostello/benchmarkdotnet-results-publisher -->';
+
+    comment.push(
+      '',
+      `<sub>:robot: This comment was generated from [this workflow](${this.getWorkflowRunUrl()}) by [benchmarkdotnet-results-publisher](https://github.com/martincostello/benchmarkdotnet-results-publisher).</sub>`,
+      '',
+      watermark,
+      ''
+    );
+
+    const text = comment.join('\n');
+    if (text) {
+      // TODO Leave a comment on the commit or PR with the regressions
+    }
+  }
 }
 
 export interface Benchmark {
@@ -499,4 +725,20 @@ interface BenchmarksData {
   lastUpdated: number;
   repoUrl: string;
   entries: BenchmarkSuites;
+}
+
+interface BenchmarksDelta {
+  current: BenchmarkResult;
+  previous: BenchmarkResult | null;
+}
+
+type RegressionType = 'duration' | 'memory';
+
+interface BenchmarkRegression {
+  name: string;
+  type: RegressionType;
+  current: number;
+  previous: number;
+  percentage: number;
+  ratio: number;
 }

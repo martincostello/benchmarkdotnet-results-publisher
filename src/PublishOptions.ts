@@ -6,6 +6,9 @@ export interface PublishOptions {
   apiUrl?: string;
   branch: string;
   commitMessage: string;
+  failOnThreshold?: boolean;
+  failThresholdDuration?: number;
+  failThresholdMemory?: number;
   maxItems?: number;
   name?: string;
   outputFilePath?: string;

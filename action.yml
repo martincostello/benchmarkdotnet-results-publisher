@@ -11,6 +11,16 @@ inputs:
   commit-message:
     description: 'The optional Git commit message to use.'
     required: false
+  fail-on-threshold:
+    description: 'If true, will cause the workflow to fail if either the duration or memory threshold is exceeded.'
+    required: false
+    default: false
+  fail-threshold-duration:
+    description: 'The optional threshold, as a ratio, which determines if the current workflow fails based on the previous result for a duration metric.'
+    required: false
+  fail-threshold-memory:
+    description: 'The optional threshold, as a ratio, which determines if the current workflow fails based on the previous result for a memory usage metric.'
+    required: false
   max-items:
     description: 'The optional maximum number of results to include for each suite of benchmark results.'
     required: false

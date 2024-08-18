@@ -76,3 +76,5 @@ WarmupCount=3
 
 "
 `;
+
+exports[`benchmarkdotnet-results-publisher when publishing results for regression generates the expected GitHub step summary 1`] = `""`;

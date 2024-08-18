@@ -1,0 +1,22 @@
+{
+  "Title": "MartinCostello.ProjectEuler.Benchmarks.PuzzleBenchmarks-20240817-102749",
+  "Benchmarks": [
+    {
+      "DisplayInfo": "PuzzleBenchmarks.Solve: ShortRun(IterationCount=3, LaunchCount=1, WarmupCount=3) [input=001]",
+      "Namespace": "MartinCostello.ProjectEuler.Benchmarks",
+      "Type": "PuzzleBenchmarks",
+      "Method": "Solve",
+      "MethodTitle": "Solve",
+      "Parameters": "input=001",
+      "FullName": "MartinCostello.ProjectEuler.Benchmarks.PuzzleBenchmarks.Solve(input: 001)",
+      "HardwareIntrinsics": "AVX2,AES,BMI1,BMI2,FMA,LZCNT,PCLMUL,POPCNT,AvxVnni,SERIALIZE VectorSize=256",
+      "Statistics": {
+        "Mean": 7560.294765487543,
+        "StandardDeviation": 345.61435443805357
+      },
+      "Memory": {
+        "BytesAllocatedPerOperation": 24
+      }
+    }
+  ]
+}

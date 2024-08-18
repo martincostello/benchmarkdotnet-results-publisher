@@ -13,12 +13,17 @@ export class ActionFixture {
   public repo: string = 'martincostello/benchmark-repo';
   public stepSummary: string = '';
 
+  private failed = false;
   private errors: (string | Error)[] = [];
   private tempDir: string = '';
   private outputPath: string = '';
   private outputs: Record<string, string> = {};
 
   constructor() {}
+
+  get success(): boolean {
+    return !this.failed;
+  }
 
   get path(): string {
     return this.tempDir;
@@ -91,6 +96,7 @@ export class ActionFixture {
       'GITHUB_SERVER_URL': 'https://github.local',
       'GITHUB_SHA': '0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33',
       'GITHUB_WORKSPACE': this.tempDir,
+      'INPUT_FAIL-ON-THRESHOLD': 'true',
       'INPUT_MAX-ITEMS': '1000',
       'INPUT_OUTPUT-STEP-SUMMARY': 'true',
       'INPUT_REPO': this.repo,
@@ -103,7 +109,9 @@ export class ActionFixture {
   }
 
   private setupMocks(): void {
-    jest.spyOn(core, 'setFailed').mockImplementation(() => {});
+    jest.spyOn(core, 'setFailed').mockImplementation(() => {
+      this.failed = true;
+    });
     this.setupLogging();
   }
 
