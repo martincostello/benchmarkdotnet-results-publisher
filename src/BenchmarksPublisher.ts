@@ -10,6 +10,7 @@ import { PublishOptions } from './PublishOptions';
 
 export class BenchmarksPublisher {
   private readonly options: PublishOptions;
+  private readonly markdownResultSuffix = '-report-github';
 
   constructor(options: PublishOptions) {
     this.options = options;
@@ -37,7 +38,7 @@ export class BenchmarksPublisher {
   }
 
   private async findMarkdownResults(): Promise<string[]> {
-    return await this.findResults('**/*-report-github.md');
+    return await this.findResults(`**/*${this.markdownResultSuffix}.md`);
   }
 
   private async findResults(pattern: string): Promise<string[]> {
@@ -425,7 +426,12 @@ export class BenchmarksPublisher {
       const markdown = await fs.promises.readFile(fileName, {
         encoding: 'utf8',
       });
-      summary = summary.addRaw(markdown).addEOL();
+
+      const title = path
+        .basename(fileName, '.md')
+        .replace(this.markdownResultSuffix, '');
+
+      summary = summary.addHeading(title, 3).addEOL().addRaw(markdown).addEOL();
     }
 
     const result = summary.stringify();

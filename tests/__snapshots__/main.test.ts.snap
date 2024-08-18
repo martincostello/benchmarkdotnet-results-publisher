@@ -3,7 +3,9 @@
 exports[`benchmarkdotnet-results-publisher when publishing results for existing-benchmark generates the expected GitHub step summary 1`] = `""`;
 
 exports[`benchmarkdotnet-results-publisher when publishing results for new-benchmark generates the expected GitHub step summary 1`] = `
-"\`\`\`
+"<h3>MartinCostello.ProjectEuler.Benchmarks.PuzzleBenchmarks</h3>
+
+\`\`\`
 
 BenchmarkDotNet v0.14.0, Windows 11 (10.0.22621.4037/22H2/2022Update/SunValley2)
 12th Gen Intel Core i7-1270P, 1 CPU, 16 logical and 12 physical cores
