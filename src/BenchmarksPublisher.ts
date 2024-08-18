@@ -33,16 +33,15 @@ export class BenchmarksPublisher {
   }
 
   private async findJsonResults(): Promise<string[]> {
-    return await glob(['**/*-report-full-compressed.json'], {
-      absolute: true,
-      cwd: this.getArtifactsPath(),
-      nodir: true,
-      realpath: true,
-    });
+    return await this.findResults('**/*-report-full-compressed.json');
   }
 
   private async findMarkdownResults(): Promise<string[]> {
-    return await glob(['**/*-report-github.md'], {
+    return await this.findResults('**/*-report-github.md');
+  }
+
+  private async findResults(pattern: string): Promise<string[]> {
+    return await glob([pattern], {
       absolute: true,
       cwd: this.getArtifactsPath(),
       nodir: true,
