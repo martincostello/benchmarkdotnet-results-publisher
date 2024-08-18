@@ -580,10 +580,16 @@ export class BenchmarksPublisher {
   private async leaveComment(
     suiteRegressions: Record<string, BenchmarkRegression[]>
   ): Promise<void> {
+    const suiteCount = Object.keys(suiteRegressions).length;
+    const firstLine =
+      suiteCount === 1
+        ? `Performance regressions have been found in the BenchmarkDotNet benchmarks.`
+        : `Performance regressions have been found in ${suiteCount} BenchmarkDotNet suite${suiteCount === 1 ? '' : 's'}.`;
+
     const comment = [
       '### Performance Regression :warning::chart_with_upwards_trend:',
       '',
-      `Performance regressions have been found in ${Object.keys(suiteRegressions).length} BenchmarkDotNet suites.`,
+      firstLine,
       '',
     ];
 
