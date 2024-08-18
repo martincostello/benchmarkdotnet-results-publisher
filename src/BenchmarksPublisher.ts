@@ -17,10 +17,14 @@ export class BenchmarksPublisher {
 
   public async publish(): Promise<void> {
     const benchmarks = await this.getBenchmarks();
-    if (Object.keys(benchmarks).length) {
+    const count = Object.keys(benchmarks).length;
+    if (count > 0) {
+      core.info(
+        `Found ${count} BenchmarkDotNet result${count === 1 ? '' : 's'}.`
+      );
       await this.publishResults(benchmarks);
     } else {
-      core.warning('No benchmarks found to publish.');
+      core.warning('No BenchmarkDotNet results found to publish.');
     }
   }
 
@@ -42,9 +46,11 @@ export class BenchmarksPublisher {
   > {
     const paths = await this.findJsonResults();
 
-    core.debug(`Found ${paths.length} BenchmarkDotNet JSON result files.`);
-    for (const fileName of paths) {
-      core.debug(`  - ${fileName}`);
+    if (core.isDebug()) {
+      core.debug(`Found ${paths.length} BenchmarkDotNet JSON result files.`);
+      for (const fileName of paths) {
+        core.debug(`  - ${fileName}`);
+      }
     }
 
     const results: Record<string, BenchmarkDotNetResults> = {};
@@ -53,8 +59,8 @@ export class BenchmarksPublisher {
       results[fileName] = await this.parseResults(fileName);
     }
 
-    core.debug(`Found ${Object.keys(results).length} sets of benchmarks.`);
     if (core.isDebug()) {
+      core.debug(`Found ${Object.keys(results).length} sets of benchmarks.`);
       for (const fileName in results) {
         const result = results[fileName];
         const names = result.Benchmarks.map((b) => b.FullName);
@@ -226,7 +232,7 @@ export class BenchmarksPublisher {
         });
 
       core.info(
-        `Updated ${fileName} in ${repo}@${branch}. Commit SHA ${commit.content?.sha?.substring(0, 7)}.`
+        `Updated ${fileName} in ${owner}/${repo}@${branch}. Commit SHA ${commit.content?.sha?.substring(0, 7)}.`
       );
       return true;
     } catch (error: any) {
@@ -324,6 +330,9 @@ export class BenchmarksPublisher {
       });
 
       if (this.options.maxItems && suite.length > this.options.maxItems) {
+        core.debug(
+          `Suite ${suiteName} contains ${suite.length} items. Truncating to configured maximum of ${this.options.maxItems}.`
+        );
         suite = suite.slice(suite.length - this.options.maxItems);
       }
 
