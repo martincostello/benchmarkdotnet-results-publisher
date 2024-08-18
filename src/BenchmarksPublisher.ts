@@ -687,7 +687,7 @@ export class BenchmarksPublisher {
         commit_sha: this.options.sha,
       });
 
-    if (prs.length < 1) {
+    if (prs.length > 0) {
       const issue_number = prs[0].number;
       await this.postCommentOnPullRequest(owner, repo, issue_number, body);
     } else {
