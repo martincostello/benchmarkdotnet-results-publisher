@@ -44,6 +44,10 @@ describe('benchmarkdotnet-results-publisher', () => {
         test('does not log any errors', () => {
           expect(fixture.getErrors()).toEqual([]);
         });
+
+        test('generates the expected GitHub step summary', async () => {
+          expect(fixture.stepSummary).toMatchSnapshot();
+        });
       }
     );
   });

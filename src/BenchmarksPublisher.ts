@@ -23,19 +23,28 @@ export class BenchmarksPublisher {
         `Found ${count} BenchmarkDotNet result${count === 1 ? '' : 's'}.`
       );
       await this.publishResults(benchmarks);
+
+      if (this.options.outputStepSummary) {
+        await this.generateSummary();
+      }
     } else {
       core.warning('No BenchmarkDotNet results found to publish.');
     }
   }
 
   private async findJsonResults(): Promise<string[]> {
-    let cwd = this.options.resultsPath;
-    if (!cwd) {
-      cwd = path.join(this.options.repoPath, 'BenchmarkDotNet.Artifacts');
-    }
     return await glob(['**/*-report-full-compressed.json'], {
       absolute: true,
-      cwd,
+      cwd: this.getArtifactsPath(),
+      nodir: true,
+      realpath: true,
+    });
+  }
+
+  private async findMarkdownResults(): Promise<string[]> {
+    return await glob(['**/*-report-github.md'], {
+      absolute: true,
+      cwd: this.getArtifactsPath(),
       nodir: true,
       realpath: true,
     });
@@ -86,6 +95,14 @@ export class BenchmarksPublisher {
         `Failed to parse '${fileName}' as BenchmarkDotNet JSON output. Results must be a JSON file generated with the '--exporters json' option: ${error}`
       );
     }
+  }
+
+  private getArtifactsPath(): string {
+    let artifacts = this.options.resultsPath;
+    if (!artifacts) {
+      artifacts = path.join(this.options.repoPath, 'BenchmarkDotNet.Artifacts');
+    }
+    return artifacts;
   }
 
   private getBranch(): string {
@@ -394,6 +411,33 @@ export class BenchmarksPublisher {
       timestamp: commit.commit.committer?.date,
       url: commit.html_url,
     };
+  }
+
+  private async generateSummary(): Promise<string | null> {
+    const fileNames = await this.findMarkdownResults();
+
+    if (fileNames.length < 1) {
+      return null;
+    }
+
+    let summary = core.summary;
+
+    for (const fileName of fileNames) {
+      const markdown = await fs.promises.readFile(fileName, {
+        encoding: 'utf8',
+      });
+      summary = summary.addRaw(markdown).addEOL();
+    }
+
+    const result = summary.stringify();
+
+    if (process.env['GITHUB_STEP_SUMMARY']) {
+      await summary.write();
+    }
+
+    summary.emptyBuffer();
+
+    return result;
   }
 }
 

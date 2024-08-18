@@ -9,6 +9,7 @@ export interface PublishOptions {
   maxItems?: number;
   name?: string;
   outputFilePath?: string;
+  outputStepSummary?: boolean;
   repo: string;
   repoPath: string;
   resultsPath?: string;
