@@ -130,6 +130,15 @@ export class BenchmarksPublisher {
     return filePath;
   }
 
+  private getRunRepository(): string {
+    if (!this.options.runRepo) {
+      throw new Error(
+        'Failed to determine the repository associated with the current workflow run.'
+      );
+    }
+    return this.options.runRepo;
+  }
+
   private getWorkflowRunUrl(): string {
     return `${this.options.serverUrl}/${this.options.runRepo}/actions/runs/${this.options.runId}`;
   }
@@ -423,12 +432,7 @@ export class BenchmarksPublisher {
   }
 
   private async getCurrentCommit(): Promise<Commit> {
-    if (!this.options.runRepo) {
-      throw new Error(
-        'Failed to determine the repository to use for the current Git commit.'
-      );
-    }
-    const [owner, repo] = this.options.runRepo.split('/');
+    const [owner, repo] = this.getRunRepository().split('/');
     const ref = this.options.sha;
 
     const octokit = github.getOctokit(this.options.accessToken, {
@@ -670,7 +674,7 @@ export class BenchmarksPublisher {
   }
 
   private async postComment(body: string): Promise<void> {
-    const [owner, repo] = this.options.repo.split('/');
+    const [owner, repo] = this.getRunRepository().split('/');
 
     const octokit = github.getOctokit(this.options.accessToken, {
       baseUrl: this.options.apiUrl,
