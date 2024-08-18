@@ -96,7 +96,7 @@ export class ActionFixture {
       'GITHUB_SERVER_URL': 'https://github.local',
       'GITHUB_SHA': '0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33',
       'GITHUB_WORKSPACE': this.tempDir,
-      'INPUT_COMMENT-ON-THRESHOLD': 'false',
+      'INPUT_COMMENT-ON-THRESHOLD': 'true',
       'INPUT_FAIL-ON-THRESHOLD': 'true',
       'INPUT_MAX-ITEMS': '1000',
       'INPUT_OUTPUT-STEP-SUMMARY': 'true',

@@ -693,7 +693,7 @@ export class BenchmarksPublisher {
         commit_sha: this.options.sha,
       });
 
-    if (prs.length > 0) {
+    if (prs.length > 0 && prs[0].active_lock_reason === null) {
       const issue_number = prs[0].number;
       await this.postCommentOnPullRequest(owner, repo, issue_number, body);
     } else {
@@ -717,29 +717,31 @@ export class BenchmarksPublisher {
       issue_number,
     });
 
+    let comment_id: number | null = null;
+
     if (comments.length > 0) {
-      let comment_id: number | null = null;
       const comment = comments.find((item) =>
         item.body?.includes(this.commentWatermark)
       );
       if (comment) {
         comment_id = comment.id;
       }
-      if (comment_id) {
-        await octokit.rest.issues.updateComment({
-          owner,
-          repo,
-          comment_id,
-          body,
-        });
-      } else {
-        await octokit.rest.issues.createComment({
-          owner,
-          repo,
-          issue_number,
-          body,
-        });
-      }
+    }
+
+    if (comment_id) {
+      await octokit.rest.issues.updateComment({
+        owner,
+        repo,
+        comment_id,
+        body,
+      });
+    } else {
+      await octokit.rest.issues.createComment({
+        owner,
+        repo,
+        issue_number,
+        body,
+      });
     }
   }
 

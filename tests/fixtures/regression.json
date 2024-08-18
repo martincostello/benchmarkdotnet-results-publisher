@@ -68,6 +68,40 @@
       },
       "status": 201,
       "response": {}
+    },
+    {
+      "basePath": "https://github.local",
+      "path": "/api/v3/repos/martincostello/benchmark-repo/commits/0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33/pulls",
+      "headers": {
+        "authorization": "token my-token"
+      },
+      "response": [
+        {
+          "number": 1933,
+          "active_lock_reason": null
+        }
+      ]
+    },
+    {
+      "basePath": "https://github.local",
+      "path": "/api/v3/repos/martincostello/benchmark-repo/issues/1933/comments",
+      "headers": {
+        "authorization": "token my-token"
+      },
+      "response": []
+    },
+    {
+      "basePath": "https://github.local",
+      "method": "POST",
+      "path": "/api/v3/repos/martincostello/benchmark-repo/issues/1933/comments",
+      "headers": {
+        "authorization": "token my-token"
+      },
+      "body": {
+        "body": "### Performance Regression :warning::chart_with_upwards_trend:\n\nPerformance regressions have been found in the BenchmarkDotNet benchmarks.\n\n#### MartinCostello.ProjectEuler.Benchmarks.PuzzleBenchmarks\n\n| Benchmark | Type | Previous | Current | Ratio |\n|-----------|------|---------:|--------:|------:|\n| Solve(input: 001) | Duration | 2.50 µs | 7.56 µs | 2.02 |\n\n\n<sub>:robot: This comment was generated from [this workflow](https://github.local/martincostello/benchmark-repo/actions/runs/123) by [benchmarkdotnet-results-publisher](https://github.com/martincostello/benchmarkdotnet-results-publisher).</sub>\n\n<!-- martincostello/benchmarkdotnet-results-publisher -->\n"
+      },
+      "status": 201,
+      "response": {}
     }
   ]
 }
