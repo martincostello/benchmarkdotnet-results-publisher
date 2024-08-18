@@ -11,6 +11,8 @@ import { PublishOptions } from './PublishOptions';
 export class BenchmarksPublisher {
   private readonly options: PublishOptions;
   private readonly markdownResultSuffix = '-report-github';
+  private readonly commentWatermark =
+    '<!-- martincostello/benchmarkdotnet-results-publisher -->';
 
   constructor(options: PublishOptions) {
     this.options = options;
@@ -23,10 +25,17 @@ export class BenchmarksPublisher {
       core.info(
         `Found ${count} BenchmarkDotNet result${count === 1 ? '' : 's'}.`
       );
-      await this.publishResults(benchmarks);
+      const deltas = await this.publishResults(benchmarks);
 
       if (this.options.outputStepSummary) {
         await this.generateSummary();
+      }
+
+      if (this.options.commentOnThreshold || this.options.failOnThreshold) {
+        const hasRegressions = await this.processDeltas(deltas);
+        if (hasRegressions && this.options.failOnThreshold) {
+          core.setFailed(`One or more benchmarks' values have regressed.`);
+        }
       }
     } else {
       core.warning('No BenchmarkDotNet results found to publish.');
@@ -121,6 +130,19 @@ export class BenchmarksPublisher {
     return filePath;
   }
 
+  private getRunRepository(): string {
+    if (!this.options.runRepo) {
+      throw new Error(
+        'Failed to determine the repository associated with the current workflow run.'
+      );
+    }
+    return this.options.runRepo;
+  }
+
+  private getWorkflowRunUrl(): string {
+    return `${this.options.serverUrl}/${this.options.runRepo}/actions/runs/${this.options.runId}`;
+  }
+
   private async getCurrentResults(): Promise<{
     data: BenchmarksData;
     sha: string | undefined;
@@ -198,7 +220,7 @@ export class BenchmarksPublisher {
 
     messageLines.push(
       '',
-      `Generated from ${this.options.runRepo}@${sha} by ${this.options.serverUrl}/${this.options.runRepo}/actions/runs/${this.options.runId}.`,
+      `Generated from ${this.options.runRepo}@${sha} by ${this.getWorkflowRunUrl()}.`,
       '',
       '---',
       'benchmarks:'
@@ -361,7 +383,7 @@ export class BenchmarksPublisher {
 
   private async publishResults(
     benchmarks: Record<string, BenchmarkDotNetResults>
-  ): Promise<void> {
+  ): Promise<Record<string, BenchmarksDelta[]>> {
     const commit = await this.getCurrentCommit();
 
     let attempts = 0;
@@ -371,7 +393,36 @@ export class BenchmarksPublisher {
       const { data, sha } = await this.getCurrentResults();
       const merged = this.mergeResults(data, benchmarks, commit);
       if (await this.updateResults(sha, merged)) {
-        return;
+        const results: Record<string, BenchmarksDelta[]> = {};
+
+        for (const suiteName in merged.entries) {
+          const suite = merged.entries[suiteName];
+
+          const currentBenchmark = suite[suite.length - 1];
+          const previousBenchmark =
+            suite.length > 1 ? suite[suite.length - 2] : null;
+
+          const deltas: BenchmarksDelta[] = [];
+
+          for (const current of currentBenchmark.benches) {
+            const previous = previousBenchmark?.benches.find(
+              (b) => b.name === current.name
+            );
+
+            if (!previous) {
+              continue;
+            }
+
+            deltas.push({
+              current,
+              previous,
+            });
+          }
+
+          results[suiteName] = deltas;
+        }
+
+        return results;
       }
 
       attempts++;
@@ -381,12 +432,7 @@ export class BenchmarksPublisher {
   }
 
   private async getCurrentCommit(): Promise<Commit> {
-    if (!this.options.runRepo) {
-      throw new Error(
-        'Failed to determine the repository to use for the current Git commit.'
-      );
-    }
-    const [owner, repo] = this.options.runRepo.split('/');
+    const [owner, repo] = this.getRunRepository().split('/');
     const ref = this.options.sha;
 
     const octokit = github.getOctokit(this.options.accessToken, {
@@ -444,6 +490,277 @@ export class BenchmarksPublisher {
 
     return result;
   }
+
+  private async processDeltas(
+    deltas: Record<string, BenchmarksDelta[]>
+  ): Promise<boolean> {
+    const durationThreshold = this.options.failThresholdDuration ?? 2;
+    const memoryThreshold = this.options.failThresholdMemory ?? 2;
+
+    let hasRegressions = false;
+    const regressions: Record<string, BenchmarkRegression[]> = {};
+
+    for (const suiteName in deltas) {
+      const suite = deltas[suiteName];
+      const suiteRegressions: BenchmarkRegression[] = [];
+
+      for (const delta of suite) {
+        const current = delta.current;
+        const previous = delta.previous;
+
+        if (!previous || previous.value === 0) {
+          continue;
+        }
+
+        const durationDelta = current.value - previous.value;
+        const durationRatio = durationDelta / previous.value;
+        const durationPercentage = durationRatio * 100;
+
+        if (core.isDebug() && current.value !== previous.value) {
+          core.debug(
+            `Benchmark '${current.name}' from suite ${suiteName} changed by ${durationDelta.toFixed(2)} ns (${durationPercentage.toFixed(2)}%)`
+          );
+        }
+
+        if (durationRatio > durationThreshold) {
+          core.warning(
+            `Benchmark '${current.name}' from suite ${suiteName} has regressed by ${durationDelta.toFixed(2)} ns (${durationPercentage.toFixed(2)}%)`
+          );
+          suiteRegressions.push({
+            name: current.name,
+            type: 'duration',
+            current: current.value,
+            previous: previous.value,
+            percentage: durationPercentage,
+            ratio: durationRatio,
+          });
+        }
+
+        if (current.bytesAllocated && previous.bytesAllocated) {
+          const memoryDelta = current.bytesAllocated - previous.bytesAllocated;
+          const memoryRatio = memoryDelta / previous.bytesAllocated;
+          const memoryPercentage = memoryRatio * 100;
+
+          if (
+            core.isDebug() &&
+            current.bytesAllocated !== previous.bytesAllocated
+          ) {
+            core.debug(
+              `Benchmark '${current.name}' from suite ${suiteName} changed by ${memoryDelta.toFixed(0)} bytes (${memoryPercentage.toFixed(2)}%)`
+            );
+          }
+
+          if (memoryRatio > memoryThreshold) {
+            core.warning(
+              `Benchmark '${current.name}' from suite ${suiteName} has regressed by ${memoryDelta.toFixed(0)} bytes (${memoryPercentage.toFixed(2)}%)`
+            );
+            suiteRegressions.push({
+              name: current.name,
+              type: 'memory',
+              current: current.bytesAllocated,
+              previous: previous.bytesAllocated,
+              percentage: memoryPercentage,
+              ratio: memoryRatio,
+            });
+          }
+        }
+      }
+
+      regressions[suiteName] = suiteRegressions;
+      hasRegressions = hasRegressions || suiteRegressions.length > 0;
+    }
+
+    if (hasRegressions && this.options.commentOnThreshold) {
+      await this.leaveComment(regressions);
+    }
+
+    return hasRegressions;
+  }
+
+  private async leaveComment(
+    suiteRegressions: Record<string, BenchmarkRegression[]>
+  ): Promise<void> {
+    const suiteCount = Object.keys(suiteRegressions).length;
+    const firstLine =
+      suiteCount === 1
+        ? `Performance regressions have been found in the BenchmarkDotNet benchmarks.`
+        : `Performance regressions have been found in ${suiteCount} BenchmarkDotNet suite${suiteCount === 1 ? '' : 's'}.`;
+
+    const comment = [
+      '### Performance Regression :warning::chart_with_upwards_trend:',
+      '',
+      firstLine,
+      '',
+    ];
+
+    const formatValues = (
+      previous: number,
+      current: number,
+      type: RegressionType
+    ): {
+      previous: string;
+      current: string;
+    } => {
+      let minValue = Math.min(previous, current);
+      const factor = 1e-3;
+      const units = type === 'memory' ? ['KB', 'MB', 'GB'] : ['µs', 'ms', 's'];
+      let unit = type === 'memory' ? 'bytes' : 'ns';
+
+      for (const nextUnit of units) {
+        if (minValue < 1000) {
+          break;
+        }
+        minValue *= factor;
+        previous *= factor;
+        current *= factor;
+        unit = nextUnit;
+      }
+
+      const formatValue = (value: number): string => {
+        if (Number.isInteger(value)) {
+          return value.toFixed(0);
+        }
+
+        if (value > 0.1) {
+          return value.toFixed(2);
+        }
+
+        return value.toString();
+      };
+
+      return {
+        previous: `${formatValue(previous)} ${unit}`,
+        current: `${formatValue(current)} ${unit}`,
+      };
+    };
+
+    for (const suiteName in suiteRegressions) {
+      const regressions = suiteRegressions[suiteName];
+
+      if (regressions.length < 1) {
+        continue;
+      }
+
+      comment.push(
+        `#### ${suiteName}`,
+        '',
+        '| Benchmark | Type | Previous | Current | Ratio |',
+        '|-----------|------|---------:|--------:|------:|'
+      );
+
+      for (const regression of regressions) {
+        const benchmarkName = regression.name.replace(`${suiteName}.`, '');
+        const type = regression.type === 'memory' ? 'Allocations' : 'Duration';
+        const ratio = regression.ratio.toFixed(2);
+
+        const { previous, current } = formatValues(
+          regression.previous,
+          regression.current,
+          regression.type
+        );
+
+        comment.push(
+          `| ${benchmarkName} | ${type} | ${previous} | ${current} | ${ratio} |`
+        );
+      }
+
+      comment.push('');
+    }
+
+    comment.push(
+      '',
+      `<sub>:robot: This comment was generated from [this workflow](${this.getWorkflowRunUrl()}) by [benchmarkdotnet-results-publisher](https://github.com/martincostello/benchmarkdotnet-results-publisher).</sub>`,
+      '',
+      this.commentWatermark,
+      ''
+    );
+
+    const text = comment.join('\n');
+    await this.postComment(text);
+  }
+
+  private async postComment(body: string): Promise<void> {
+    const [owner, repo] = this.getRunRepository().split('/');
+
+    const octokit = github.getOctokit(this.options.accessToken, {
+      baseUrl: this.options.apiUrl,
+    });
+
+    const { data: prs } =
+      await octokit.rest.repos.listPullRequestsAssociatedWithCommit({
+        owner,
+        repo,
+        commit_sha: this.options.sha,
+      });
+
+    if (prs.length > 0 && prs[0].active_lock_reason === null) {
+      const issue_number = prs[0].number;
+      await this.postCommentOnPullRequest(owner, repo, issue_number, body);
+    } else {
+      await this.postCommentOnCommit(owner, repo, this.options.sha, body);
+    }
+  }
+
+  private async postCommentOnPullRequest(
+    owner: string,
+    repo: string,
+    issue_number: number,
+    body: string
+  ): Promise<void> {
+    const octokit = github.getOctokit(this.options.accessToken, {
+      baseUrl: this.options.apiUrl,
+    });
+
+    const { data: comments } = await octokit.rest.issues.listComments({
+      owner,
+      repo,
+      issue_number,
+    });
+
+    let comment_id: number | null = null;
+
+    if (comments.length > 0) {
+      const comment = comments.find((item) =>
+        item.body?.includes(this.commentWatermark)
+      );
+      if (comment) {
+        comment_id = comment.id;
+      }
+    }
+
+    if (comment_id) {
+      await octokit.rest.issues.updateComment({
+        owner,
+        repo,
+        comment_id,
+        body,
+      });
+    } else {
+      await octokit.rest.issues.createComment({
+        owner,
+        repo,
+        issue_number,
+        body,
+      });
+    }
+  }
+
+  private async postCommentOnCommit(
+    owner: string,
+    repo: string,
+    commit_sha: string,
+    body: string
+  ): Promise<void> {
+    const octokit = github.getOctokit(this.options.accessToken, {
+      baseUrl: this.options.apiUrl,
+    });
+    await octokit.rest.repos.createCommitComment({
+      owner,
+      repo,
+      commit_sha,
+      body,
+    });
+  }
 }
 
 export interface Benchmark {
@@ -499,4 +816,20 @@ interface BenchmarksData {
   lastUpdated: number;
   repoUrl: string;
   entries: BenchmarkSuites;
+}
+
+interface BenchmarksDelta {
+  current: BenchmarkResult;
+  previous: BenchmarkResult | null;
+}
+
+type RegressionType = 'duration' | 'memory';
+
+interface BenchmarkRegression {
+  name: string;
+  type: RegressionType;
+  current: number;
+  previous: number;
+  percentage: number;
+  ratio: number;
 }

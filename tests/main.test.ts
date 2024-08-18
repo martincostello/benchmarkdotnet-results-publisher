@@ -23,32 +23,37 @@ describe('benchmarkdotnet-results-publisher', () => {
   });
 
   describe('when publishing', () => {
-    describe.each([['new-benchmark'], ['existing-benchmark']])(
-      'results for %s',
-      (scenario: string) => {
-        let fixture: ActionFixture;
+    describe.each([
+      ['new-benchmark', true],
+      ['existing-benchmark', true],
+      ['regression', false],
+    ])('results for %s', (scenario: string, succeeds: boolean) => {
+      let fixture: ActionFixture;
 
-        beforeAll(async () => {
-          await setup(scenario);
-          fixture = new ActionFixture();
+      beforeAll(async () => {
+        await setup(scenario);
+        fixture = new ActionFixture();
 
-          await fixture.initialize(scenario);
+        await fixture.initialize(scenario);
 
-          await fixture.run();
-        }, timeout);
+        await fixture.run();
+      }, timeout);
 
-        afterAll(async () => {
-          await fixture?.destroy();
-        });
+      afterAll(async () => {
+        await fixture?.destroy();
+      });
 
-        test('does not log any errors', () => {
-          expect(fixture.getErrors()).toEqual([]);
-        });
+      test('reports the correct result', () => {
+        expect(fixture.success).toEqual(succeeds);
+      });
 
-        test('generates the expected GitHub step summary', async () => {
-          expect(fixture.stepSummary).toMatchSnapshot();
-        });
-      }
-    );
+      test('does not log any errors', () => {
+        expect(fixture.getErrors()).toEqual([]);
+      });
+
+      test('generates the expected GitHub step summary', async () => {
+        expect(fixture.stepSummary).toMatchSnapshot();
+      });
+    });
   });
 });

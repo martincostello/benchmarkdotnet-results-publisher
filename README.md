@@ -40,7 +40,11 @@ jobs:
 | **Name** | **Description** | **Default** |
 |:--|:--|:--|
 | `branch` | The optional Git branch to push the results to. | `gh-pages` |
+| `comment-on-threshold` | Whether to post a comment if either the duration or memory threshold is exceeded for any benchmark. | `false` |
 | `commit-message` | The optional Git commit message to use. | - |
+| `fail-on-threshold` | Whether to cause the workflow to fail if either the duration or memory threshold is exceeded for any benchmark. | `false` |
+| `fail-threshold-duration` | The optional threshold, as a ratio, which determines if the current workflow fails based on the previous result for a duration metric. | `2` (i.e. 200%) |
+| `fail-threshold-memory` | The optional threshold, as a ratio, which determines if the current workflow fails based on the previous result for a memory usage metric. | `2` (i.e. 200%) |
 | `max-items` | The optional maximum number of results to include for each suite of benchmark results. | Unlimited |
 | `name` | The optional name to use to group the benchmark results that are found into suites. | Inferred from BenchmarkDotNet results |
 | `output-file-path` | The optional path of the file to write the results to. | `./data.json` |
