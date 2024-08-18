@@ -539,13 +539,13 @@ export class BenchmarksPublisher {
             current.bytesAllocated !== previous.bytesAllocated
           ) {
             core.debug(
-              `Benchmark '${current.name}' from suite ${suiteName} changed by ${memoryDelta.toFixed(2)} bytes (${memoryPercentage.toFixed(2)}%)`
+              `Benchmark '${current.name}' from suite ${suiteName} changed by ${memoryDelta.toFixed(0)} bytes (${memoryPercentage.toFixed(2)}%)`
             );
           }
 
           if (memoryRatio > memoryThreshold) {
             core.warning(
-              `Benchmark '${current.name}' from suite ${suiteName} has regressed by ${memoryDelta.toFixed(2)} bytes (${memoryPercentage.toFixed(2)}%)`
+              `Benchmark '${current.name}' from suite ${suiteName} has regressed by ${memoryDelta.toFixed(0)} bytes (${memoryPercentage.toFixed(2)}%)`
             );
             suiteRegressions.push({
               name: current.name,
