@@ -132,6 +132,8 @@ export class BenchmarksPublisher {
       baseUrl: this.options.apiUrl,
     });
 
+    await this.ensureBranch(owner, repo, ref);
+
     try {
       const { data: contents } = await octokit.rest.repos.getContent({
         owner,
@@ -234,8 +236,6 @@ export class BenchmarksPublisher {
     });
 
     try {
-      await this.ensureBranch(owner, repo, branch);
-
       const { data: commit } =
         await octokit.rest.repos.createOrUpdateFileContents({
           owner,
