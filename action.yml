@@ -20,6 +20,10 @@ inputs:
   output-file-path:
     description: 'The optional path of the file to write the results to.'
     required: false
+  output-step-summary:
+    description: 'If true, will output the Markdown results from BenchmarkDotNet to GITHUB_STEP_SUMMARY.'
+    required: false
+    default: true
   repo:
     description: 'The optional GitHub repository to push the results to.'
     required: false

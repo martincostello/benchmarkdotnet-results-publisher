@@ -20,6 +20,8 @@ export async function run(): Promise<void> {
       commitMessage: core.getInput('commit-message', { required: false }),
       name: core.getInput('name', { required: false }),
       outputFilePath: core.getInput('output-file-path', { required: false }),
+      outputStepSummary:
+        core.getInput('output-step-summary', { required: false }) === 'true',
       repo:
         core.getInput('repo', { required: false }) ??
         process.env.GITHUB_REPOSITORY,

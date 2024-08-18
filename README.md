@@ -44,6 +44,7 @@ jobs:
 | `max-items` | The optional maximum number of results to include for each suite of benchmark results. | Unlimited |
 | `name` | The optional name to use to group the benchmark results that are found into suites. | Inferred from BenchmarkDotNet results |
 | `output-file-path` | The optional path of the file to write the results to. | `./data.json` |
+| `output-step-summary` | Whether to output the Markdown results from BenchmarkDotNet to [`GITHUB_STEP_SUMMARY`][github-step-summary]. | `true` |
 | `repo` | The optional GitHub repository to push the results to. | [`github.repository`][github-context] |
 | `repo-token` | The GitHub access token to use to push the results to a GitHub repository. | [`github.token`][github-token] |
 | `results-path` | The optional path of the BenchmarkDotNet results directory to process. | `./BenchmarkDotNet.Artifacts` |
@@ -71,6 +72,7 @@ This project is licensed under the [Apache 2.0][license] license.
 [coverage-report]: https://codecov.io/gh/martincostello/benchmarkdotnet-results-publisher "Code coverage report for this project"
 [github-action-benchmark]: https://github.com/benchmark-action/github-action-benchmark "The benchmark-action/github-action-benchmark repository on GitHub.com"
 [github-context]: https://docs.github.com/actions/learn-github-actions/contexts#github-context "Accessing contextual information about workflow runs"
+[github-step-summary]: https://docs.github.com/actions/writing-workflows/choosing-what-your-workflow-does/workflow-commands-for-github-actions#adding-a-job-summary "Adding a job summary"
 [github-token]: https://docs.github.com/actions/security-for-github-actions/security-guides/automatic-token-authentication "Automatic token authentication"
 [issues]: https://github.com/martincostello/benchmarkdotnet-results-publisher/issues "Issues for this project on GitHub.com"
 [license]: https://www.apache.org/licenses/LICENSE-2.0.txt "The Apache 2.0 license"
