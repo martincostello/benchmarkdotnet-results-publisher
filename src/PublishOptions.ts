@@ -5,6 +5,7 @@ export interface PublishOptions {
   accessToken: string;
   apiUrl?: string;
   branch: string;
+  commentOnThreshold?: boolean;
   commitMessage: string;
   failOnThreshold?: boolean;
   failThresholdDuration?: number;

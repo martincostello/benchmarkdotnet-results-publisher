@@ -8,11 +8,15 @@ inputs:
   branch:
     description: 'The optional Git branch to push the results to.'
     required: false
+  comment-on-threshold:
+    description: 'If true, will post a comment if either the duration or memory threshold is exceeded for any benchmark.'
+    required: false
+    default: false
   commit-message:
     description: 'The optional Git commit message to use.'
     required: false
   fail-on-threshold:
-    description: 'If true, will cause the workflow to fail if either the duration or memory threshold is exceeded.'
+    description: 'If true, will cause the workflow to fail if either the duration or memory threshold is exceeded for any benchmark.'
     required: false
     default: false
   fail-threshold-duration:

@@ -17,6 +17,8 @@ export async function run(): Promise<void> {
       accessToken: core.getInput('repo-token', { required: true }),
       apiUrl: context.apiUrl,
       branch: core.getInput('branch', { required: false }),
+      commentOnThreshold:
+        core.getInput('comment-on-threshold', { required: false }) === 'true',
       commitMessage: core.getInput('commit-message', { required: false }),
       failOnThreshold:
         core.getInput('fail-on-threshold', { required: false }) === 'true',

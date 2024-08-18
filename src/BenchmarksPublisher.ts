@@ -11,6 +11,8 @@ import { PublishOptions } from './PublishOptions';
 export class BenchmarksPublisher {
   private readonly options: PublishOptions;
   private readonly markdownResultSuffix = '-report-github';
+  private readonly commentWatermark =
+    '<!-- martincostello/benchmarkdotnet-results-publisher -->';
 
   constructor(options: PublishOptions) {
     this.options = options;
@@ -29,8 +31,9 @@ export class BenchmarksPublisher {
         await this.generateSummary();
       }
 
-      if (this.options.failOnThreshold) {
-        if (await this.processDeltas(deltas)) {
+      if (this.options.commentOnThreshold || this.options.failOnThreshold) {
+        const hasRegressions = await this.processDeltas(deltas);
+        if (hasRegressions && this.options.failOnThreshold) {
           core.setFailed(`One or more benchmarks' values have regressed.`);
         }
       }
@@ -563,7 +566,7 @@ export class BenchmarksPublisher {
       hasRegressions = hasRegressions || suiteRegressions.length > 0;
     }
 
-    if (hasRegressions) {
+    if (hasRegressions && this.options.commentOnThreshold) {
       await this.leaveComment(regressions);
     }
 
@@ -654,21 +657,97 @@ export class BenchmarksPublisher {
       comment.push('');
     }
 
-    const watermark =
-      '<!-- martincostello/benchmarkdotnet-results-publisher -->';
-
     comment.push(
       '',
       `<sub>:robot: This comment was generated from [this workflow](${this.getWorkflowRunUrl()}) by [benchmarkdotnet-results-publisher](https://github.com/martincostello/benchmarkdotnet-results-publisher).</sub>`,
       '',
-      watermark,
+      this.commentWatermark,
       ''
     );
 
     const text = comment.join('\n');
-    if (text) {
-      // TODO Leave a comment on the commit or PR with the regressions
+    await this.postComment(text);
+  }
+
+  private async postComment(body: string): Promise<void> {
+    const [owner, repo] = this.options.repo.split('/');
+
+    const octokit = github.getOctokit(this.options.accessToken, {
+      baseUrl: this.options.apiUrl,
+    });
+
+    const { data: prs } =
+      await octokit.rest.repos.listPullRequestsAssociatedWithCommit({
+        owner,
+        repo,
+        commit_sha: this.options.sha,
+      });
+
+    if (prs.length < 1) {
+      const issue_number = prs[0].number;
+      await this.postCommentOnPullRequest(owner, repo, issue_number, body);
+    } else {
+      await this.postCommentOnCommit(owner, repo, this.options.sha, body);
     }
+  }
+
+  private async postCommentOnPullRequest(
+    owner: string,
+    repo: string,
+    issue_number: number,
+    body: string
+  ): Promise<void> {
+    const octokit = github.getOctokit(this.options.accessToken, {
+      baseUrl: this.options.apiUrl,
+    });
+
+    const { data: comments } = await octokit.rest.issues.listComments({
+      owner,
+      repo,
+      issue_number,
+    });
+
+    if (comments.length > 0) {
+      let comment_id: number | null = null;
+      const comment = comments.find((item) =>
+        item.body?.includes(this.commentWatermark)
+      );
+      if (comment) {
+        comment_id = comment.id;
+      }
+      if (comment_id) {
+        await octokit.rest.issues.updateComment({
+          owner,
+          repo,
+          comment_id,
+          body,
+        });
+      } else {
+        await octokit.rest.issues.createComment({
+          owner,
+          repo,
+          issue_number,
+          body,
+        });
+      }
+    }
+  }
+
+  private async postCommentOnCommit(
+    owner: string,
+    repo: string,
+    commit_sha: string,
+    body: string
+  ): Promise<void> {
+    const octokit = github.getOctokit(this.options.accessToken, {
+      baseUrl: this.options.apiUrl,
+    });
+    await octokit.rest.repos.createCommitComment({
+      owner,
+      repo,
+      commit_sha,
+      body,
+    });
   }
 }
 
