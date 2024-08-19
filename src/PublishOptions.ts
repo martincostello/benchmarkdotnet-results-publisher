@@ -7,6 +7,7 @@ export interface PublishOptions {
   branch: string;
   commentOnThreshold?: boolean;
   commitMessage: string;
+  commitMessagePrefix: string;
   failOnThreshold?: boolean;
   failThresholdDuration?: number;
   failThresholdMemory?: number;

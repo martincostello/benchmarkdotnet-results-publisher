@@ -20,6 +20,9 @@ export async function run(): Promise<void> {
       commentOnThreshold:
         core.getInput('comment-on-threshold', { required: false }) === 'true',
       commitMessage: core.getInput('commit-message', { required: false }),
+      commitMessagePrefix: core.getInput('commit-message-prefix', {
+        required: false,
+      }),
       failOnThreshold:
         core.getInput('fail-on-threshold', { required: false }) === 'true',
       name: core.getInput('name', { required: false }),

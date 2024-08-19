@@ -94,6 +94,7 @@ using static HTML pages and [Chart.js][chart-js].
 | `branch` | The optional Git branch to push the results to. | `gh-pages` |
 | `comment-on-threshold` | Whether to post a comment if either the duration or memory threshold is exceeded for any benchmark. | `false` |
 | `commit-message` | The optional Git commit message to use. | - |
+| `commit-message-prefix` | The optional prefix to use when generating Git commit messages if a custom commit message is not used. | - |
 | `fail-on-threshold` | Whether to cause the workflow to fail if either the duration or memory threshold is exceeded for any benchmark. | `false` |
 | `fail-threshold-duration` | The optional threshold, as a ratio, which determines if the current workflow fails based on the previous result for a duration metric. | `2` (i.e. 200%) |
 | `fail-threshold-memory` | The optional threshold, as a ratio, which determines if the current workflow fails based on the previous result for a memory usage metric. | `2` (i.e. 200%) |

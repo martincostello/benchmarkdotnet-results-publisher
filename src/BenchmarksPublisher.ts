@@ -200,11 +200,15 @@ export class BenchmarksPublisher {
     }
   }
 
-  private generateCommitMessage(names: string[], sha: string): string {
+  private generateCommitMessage(
+    names: string[],
+    sha: string,
+    prefix: string
+  ): string {
     const messageLines = [
       names.length > 1
-        ? `Publish ${names.length} benchmarks results for ${this.options.runRepo}`
-        : `Publish benchmarks results for ${this.options.runRepo}`,
+        ? `${prefix}Publish ${names.length} benchmarks results for ${this.options.runRepo}`
+        : `${prefix}Publish benchmarks results for ${this.options.runRepo}`,
       '',
     ];
 
@@ -247,7 +251,8 @@ export class BenchmarksPublisher {
     if (!message) {
       message = this.generateCommitMessage(
         Object.keys(results.entries),
-        this.options.sha
+        this.options.sha,
+        this.options.commitMessagePrefix
       );
     }
 
