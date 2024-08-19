@@ -276,6 +276,9 @@ export class BenchmarksPublisher {
       return true;
     } catch (error: any) {
       if (error['status'] === 409) {
+        core.warning(
+          `Failed to create or update ${fileName} for branch ${branch} in repository ${owner}/${repo}: ${error}`
+        );
         return false;
       }
       throw error;
