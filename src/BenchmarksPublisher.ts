@@ -205,6 +205,10 @@ export class BenchmarksPublisher {
     sha: string,
     prefix: string
   ): string {
+    if (prefix && prefix.length > 0) {
+      prefix = `${prefix.trimEnd()} `;
+    }
+
     const messageLines = [
       names.length > 1
         ? `${prefix}Publish ${names.length} benchmarks results for ${this.options.runRepo}`
