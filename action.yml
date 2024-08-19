@@ -15,6 +15,9 @@ inputs:
   commit-message:
     description: 'The optional Git commit message to use.'
     required: false
+  commit-message-prefix:
+    description: 'The optional prefix to use when generating Git commit messages if a custom commit message is not used.'
+    required: false
   fail-on-threshold:
     description: 'If true, will cause the workflow to fail if either the duration or memory threshold is exceeded for any benchmark.'
     required: false
