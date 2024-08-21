@@ -16,6 +16,13 @@ From there, you can then use the results as you please, such as to generate a da
 of your code over time. An easy way to achieve this is with a static GitHub Pages site and some JavaScript to
 render the results.
 
+A repository that demonstrates this approach can be found here: [martincostello/benchmarks-demo][benchmarks-demo].
+
+> [!WARNING]
+> Do not use this action with pull requests that come from untrusted sources, such as from public forks or
+> Dependabot. A malicious user could craft a pull request that hijacks the permissions of the configured
+> GitHub token. See this [GitHub Security blog post][github-token-security] for more information.
+
 ## Example Usage
 
 Below is an example of a full GitHub Actions workflow to run the benchmarks in a .NET
@@ -87,6 +94,19 @@ of their benchmarks to my [benchmarks repository][benchmarks-repo]. That reposit
 configured with a GitHub Pages site to display the results on my [benchmarks site][benchmarks-site]
 using static HTML pages and [Chart.js][chart-js].
 
+## Features
+
+- Publishes the results of [BenchmarkDotNet][benchmarkdotnet] benchmarks to a Git branch in a GitHub repository.
+- Write the Markdown summary of the BenchmarkDotNet results to the workflow run summary.
+- Optionally fail the workflow if the duration or memory threshold is exceeded for any benchmark using.
+- Optionally posts a comment to a commit or pull request if the duration or memory threshold is exceeded for any benchmark.
+- Optionally truncate the number of results for each suite of benchmark results to a fixed sliding window.
+
+> [!TIP]
+> This action is only intended to be used to track the _relative_ performance of your benchmarks over time
+> when using [GitHub-hosted runners][github-hosted-runners]. For more stable results or for tracking absolute
+> performance, consider using a [self-hosted runner][github-self-hosted-runners] to run your benchmarks.
+
 ## Inputs
 
 | **Name** | **Description** | **Default** |
@@ -131,6 +151,7 @@ This project is licensed under the [Apache 2.0][license] license.
 
 [benchmarkdotnet]: https://github.com/dotnet/BenchmarkDotNet "BenchmarkDotNet on GitHub.com"
 [benchmarkdotnet-json]: https://benchmarkdotnet.org/articles/configs/exporters.html?q=export#sample-introexportjson "BenchmarkDotNet exporters documentation"
+[benchmarks-demo]: https://github.com/martincostello/benchmarks-demo "The martincostello/benchmarks-demo repository on GitHub.com"
 [benchmarks-repo]: https://github.com/martincostello/benchmarks "The martincostello/benchmarks repository on GitHub.com"
 [benchmarks-site]: https://benchmarks.martincostello.com "My benchmarks tracking website"
 [benchmarks-source]: https://github.com/martincostello/project-euler/blob/3cc5b07f1f609457813f9045c689058c0b679a6c/.github/workflows/benchmark-ci.yml#L38-L66 "Example usage of the action in a GitHub Actions workflow"
@@ -142,9 +163,12 @@ This project is licensed under the [Apache 2.0][license] license.
 [github-action-benchmark]: https://github.com/benchmark-action/github-action-benchmark "The benchmark-action/github-action-benchmark repository on GitHub.com"
 [github-apps]: https://docs.github.com/apps/creating-github-apps/about-creating-github-apps/about-creating-github-apps "About creating GitHub Apps"
 [github-context]: https://docs.github.com/actions/learn-github-actions/contexts#github-context "Accessing contextual information about workflow runs"
+[github-hosted-runners]: https://docs.github.com/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners "About GitHub-hosted runners"
 [github-pat]: https://docs.github.com/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens "Managing your personal access tokens"
+[github-self-hosted-runners]: https://docs.github.com/actions/hosting-your-own-runners/managing-self-hosted-runners/about-self-hosted-runners "About self-hosted runners"
 [github-step-summary]: https://docs.github.com/actions/writing-workflows/choosing-what-your-workflow-does/workflow-commands-for-github-actions#adding-a-job-summary "Adding a job summary"
 [github-token]: https://docs.github.com/actions/security-for-github-actions/security-guides/automatic-token-authentication "Automatic token authentication"
+[github-token-security]: https://securitylab.github.com/resources/github-actions-preventing-pwn-requests/ "Keeping your GitHub Actions and workflows secure Part 1: Preventing pwn requests"
 [issues]: https://github.com/martincostello/benchmarkdotnet-results-publisher/issues "Issues for this project on GitHub.com"
 [license]: https://www.apache.org/licenses/LICENSE-2.0.txt "The Apache 2.0 license"
 [repo]: https://github.com/martincostello/benchmarkdotnet-results-publisher "This project on GitHub.com"
