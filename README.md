@@ -99,7 +99,7 @@ using static HTML pages and [Chart.js][chart-js].
 - Publishes the results of [BenchmarkDotNet][benchmarkdotnet] benchmarks to a Git branch in a GitHub repository.
 - Write the Markdown summary of the BenchmarkDotNet results to the workflow run summary.
 - Optionally fail the workflow if the duration or memory threshold is exceeded for any benchmark using.
-- Optionally posts a comment to a commit or pull request if the duration or memory threshold is exceeded for any benchmark.
+- Optionally posts a comment to a commit or pull request if the duration or memory threshold is exceeded for any benchmark ([example][comment-example]).
 - Optionally truncate the number of results for each suite of benchmark results to a fixed sliding window.
 
 > [!TIP]
@@ -158,6 +158,7 @@ This project is licensed under the [Apache 2.0][license] license.
 [build-badge]: https://github.com/martincostello/benchmarkdotnet-results-publisher/actions/workflows/build.yml/badge.svg?branch=main&event=push
 [build-status]: https://github.com/martincostello/benchmarkdotnet-results-publisher/actions?query=workflow%3Abuild+branch%3Amain+event%3Apush "Continuous Integration for this project"
 [chart-js]: https://www.chartjs.org "Chart.js"
+[comment-example]: https://github.com/martincostello/project-euler/pull/335#issuecomment-2302688319 "An example comment for a performance regression"
 [coverage-badge]: https://codecov.io/gh/martincostello/benchmarkdotnet-results-publisher/branch/main/graph/badge.svg
 [coverage-report]: https://codecov.io/gh/martincostello/benchmarkdotnet-results-publisher "Code coverage report for this project"
 [github-action-benchmark]: https://github.com/benchmark-action/github-action-benchmark "The benchmark-action/github-action-benchmark repository on GitHub.com"
