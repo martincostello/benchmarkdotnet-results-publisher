@@ -92,7 +92,7 @@ and want to publish the results to a GitHub repository.
 For example, I use this action in various repositories of my own, which [publish the results][benchmarks-source]
 of their benchmarks to my [benchmarks repository][benchmarks-repo]. That repository is then
 configured with a GitHub Pages site to display the results on my [benchmarks site][benchmarks-site]
-using static HTML pages and [Chart.js][chart-js].
+using static HTML pages and [Plotly][plotly].
 
 ## Features
 
@@ -157,7 +157,6 @@ This project is licensed under the [Apache 2.0][license] license.
 [benchmarks-source]: https://github.com/martincostello/project-euler/blob/3cc5b07f1f609457813f9045c689058c0b679a6c/.github/workflows/benchmark-ci.yml#L38-L66 "Example usage of the action in a GitHub Actions workflow"
 [build-badge]: https://github.com/martincostello/benchmarkdotnet-results-publisher/actions/workflows/build.yml/badge.svg?branch=main&event=push
 [build-status]: https://github.com/martincostello/benchmarkdotnet-results-publisher/actions?query=workflow%3Abuild+branch%3Amain+event%3Apush "Continuous Integration for this project"
-[chart-js]: https://www.chartjs.org "Chart.js"
 [comment-example]: https://github.com/martincostello/project-euler/pull/335#issuecomment-2302688319 "An example comment for a performance regression"
 [coverage-badge]: https://codecov.io/gh/martincostello/benchmarkdotnet-results-publisher/branch/main/graph/badge.svg
 [coverage-report]: https://codecov.io/gh/martincostello/benchmarkdotnet-results-publisher "Code coverage report for this project"
@@ -172,6 +171,7 @@ This project is licensed under the [Apache 2.0][license] license.
 [github-token-security]: https://securitylab.github.com/resources/github-actions-preventing-pwn-requests/ "Keeping your GitHub Actions and workflows secure Part 1: Preventing pwn requests"
 [issues]: https://github.com/martincostello/benchmarkdotnet-results-publisher/issues "Issues for this project on GitHub.com"
 [license]: https://www.apache.org/licenses/LICENSE-2.0.txt "The Apache 2.0 license"
+[plotly]: https://plotly.com/javascript/ "Plotly"
 [repo]: https://github.com/martincostello/benchmarkdotnet-results-publisher "This project on GitHub.com"
 [scorecard-badge]: https://api.securityscorecards.dev/projects/github.com/martincostello/benchmarkdotnet-results-publisher/badge
 [scorecard-report]: https://securityscorecards.dev/viewer/?uri=github.com/martincostello/benchmarkdotnet-results-publisher "OpenSSF Scorecard for this project"
