@@ -90,9 +90,8 @@ This action is useful for projects that use [BenchmarkDotNet][benchmarkdotnet] t
 and want to publish the results to a GitHub repository.
 
 For example, I use this action in various repositories of my own, which [publish the results][benchmarks-source]
-of their benchmarks to my [benchmarks repository][benchmarks-repo]. That repository is then
-configured with a GitHub Pages site to display the results on my [benchmarks site][benchmarks-site]
-using static HTML pages and [Plotly][plotly].
+of their benchmarks to my [benchmarks repository][benchmarks-repo]. That data from that repository is then
+consumed by [a GitHub Pages site][benchmarks-site] to display the results using static HTML pages and [Plotly][plotly].
 
 ## Features
 
