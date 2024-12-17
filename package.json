@@ -74,7 +74,7 @@
     "prettier": "^3.4.2",
     "ts-jest": "^29.2.5",
     "typescript": "^5.7.2",
-    "undici": "^7.1.0"
+    "undici": "^7.1.1"
   },
   "eslintConfig": {
     "plugins": [
