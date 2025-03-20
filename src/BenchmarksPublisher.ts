@@ -365,7 +365,7 @@ export class BenchmarksPublisher {
       for (const benchmark of result.Benchmarks) {
         const item: BenchmarkResult = {
           name: benchmark.FullName,
-          value: benchmark.Statistics?.Mean ?? NaN,
+          value: benchmark.Statistics?.Mean ?? 'NaN',
           unit: 'ns',
           range: benchmark.Statistics
             ? `± ${benchmark.Statistics?.StandardDeviation}`
