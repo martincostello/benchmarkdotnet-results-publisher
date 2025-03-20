@@ -61,6 +61,7 @@ export async function run(): Promise<void> {
 
     const publisher = new BenchmarksPublisher(options);
     await publisher.publish();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     core.error('Failed to publish benchmark results.');
     core.error(error);
