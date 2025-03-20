@@ -185,6 +185,7 @@ export class BenchmarksPublisher {
         data,
         sha: contents['sha'],
       };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       if (error['status'] === 404) {
         return {
@@ -283,6 +284,7 @@ export class BenchmarksPublisher {
         `Updated ${fileName} in ${owner}/${repo}@${branch}. Commit SHA ${commit.content?.sha?.substring(0, 7)}.`
       );
       return true;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       if (error['status'] === 409) {
         core.warning(
@@ -312,6 +314,7 @@ export class BenchmarksPublisher {
         branch,
       });
       exists = true;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       if (error['status'] === 404) {
         exists = false;
