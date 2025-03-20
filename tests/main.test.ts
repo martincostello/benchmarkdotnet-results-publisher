@@ -27,6 +27,7 @@ describe('benchmarkdotnet-results-publisher', () => {
       ['new-benchmark', true],
       ['existing-benchmark', true],
       ['regression', false],
+      ['failing-benchmark', true],
     ])('results for %s', (scenario: string, succeeds: boolean) => {
       let fixture: ActionFixture;
 

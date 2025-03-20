@@ -1,0 +1,102 @@
+{
+  "scenarios": [
+    {
+      "basePath": "https://github.local",
+      "path": "/api/v3/repos/martincostello/benchmark-repo/commits/0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33",
+      "response": {
+        "sha": "0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33",
+        "commit": {
+          "author": {
+            "name": "Martin Costello",
+            "email": "martin@martincostello.com",
+            "date": "2024-08-17T07:22:30Z"
+          },
+          "committer": {
+            "name": "GitHub",
+            "email": "noreply@github.com",
+            "date": "2024-08-17T07:22:30Z"
+          },
+          "message": "Update code\n\nUpdate the code to fix a bug."
+        },
+        "url": "https://github.local/api/v3/repos/martincostello/benchmark-repo/commits/0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33",
+        "html_url": "https://github.local/martincostello/benchmark-repo/commit/0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33",
+        "author": {
+          "login": "martincostello"
+        },
+        "committer": {
+          "login": "web-flow"
+        }
+      }
+    },
+    {
+      "basePath": "https://github.local",
+      "path": "/api/v3/repos/martincostello/benchmark-repo/contents/data.json?ref=gh-pages",
+      "headers": {
+        "authorization": "token my-token"
+      },
+      "status": 404,
+      "response": {}
+    },
+    {
+      "basePath": "https://github.local",
+      "path": "/api/v3/repos/martincostello/benchmark-repo/branches/gh-pages",
+      "headers": {
+        "authorization": "token my-token"
+      },
+      "status": 404,
+      "response": {}
+    },
+    {
+      "basePath": "https://github.local",
+      "path": "/api/v3/repos/martincostello/benchmark-repo",
+      "headers": {
+        "authorization": "token my-token"
+      },
+      "response": {
+        "default_branch": "main"
+      }
+    },
+    {
+      "basePath": "https://github.local",
+      "path": "/api/v3/repos/martincostello/benchmark-repo/branches/main",
+      "headers": {
+        "authorization": "token my-token"
+      },
+      "response": {
+        "name": "main",
+        "commit": {
+          "sha": "b28b7af69320201d1cf206ebf28373980add1451"
+        }
+      }
+    },
+    {
+      "basePath": "https://github.local",
+      "path": "/api/v3/repos/martincostello/benchmark-repo/git/refs",
+      "method": "POST",
+      "headers": {
+        "authorization": "token my-token"
+      },
+      "body": {
+        "ref": "refs/heads/gh-pages",
+        "sha": "b28b7af69320201d1cf206ebf28373980add1451"
+      },
+      "status": 201,
+      "response": {}
+    },
+    {
+      "basePath": "https://github.local",
+      "path": "/api/v3/repos/martincostello/benchmark-repo/contents/data.json",
+      "method": "PUT",
+      "headers": {
+        "authorization": "token my-token"
+      },
+      "body": {
+        "branch": "gh-pages",
+        "message": "Publish benchmarks results for martincostello/benchmark-repo\n\nPublish BenchmarkDotNet results for the TodoApp.OpenApiBenchmarks benchmark.\n\nGenerated from martincostello/benchmark-repo@0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33 by https://github.local/martincostello/benchmark-repo/actions/runs/123.\n\n---\nbenchmarks:\n- name: TodoApp.OpenApiBenchmarks\n...\n\n",
+        "content": "ewogICJsYXN0VXBkYXRlZCI6IDE3MjM4OTgwOTYwMDAsCiAgInJlcG9VcmwiOiAiaHR0cHM6Ly9naXRodWIubG9jYWwvbWFydGluY29zdGVsbG8vYmVuY2htYXJrLXJlcG8iLAogICJlbnRyaWVzIjogewogICAgIlRvZG9BcHAuT3BlbkFwaUJlbmNobWFya3MiOiBbCiAgICAgIHsKICAgICAgICAiY29tbWl0IjogewogICAgICAgICAgImF1dGhvciI6IHsKICAgICAgICAgICAgInVzZXJuYW1lIjogIm1hcnRpbmNvc3RlbGxvIgogICAgICAgICAgfSwKICAgICAgICAgICJjb21taXR0ZXIiOiB7CiAgICAgICAgICAgICJ1c2VybmFtZSI6ICJ3ZWItZmxvdyIKICAgICAgICAgIH0sCiAgICAgICAgICAic2hhIjogIjBiZWVjN2I1ZWEzZjBmZGJjOTVkMGRkNDdmM2M1YmMyNzVkYThhMzMiLAogICAgICAgICAgIm1lc3NhZ2UiOiAiVXBkYXRlIGNvZGVcblxuVXBkYXRlIHRoZSBjb2RlIHRvIGZpeCBhIGJ1Zy4iLAogICAgICAgICAgInRpbWVzdGFtcCI6ICIyMDI0LTA4LTE3VDA3OjIyOjMwWiIsCiAgICAgICAgICAidXJsIjogImh0dHBzOi8vZ2l0aHViLmxvY2FsL21hcnRpbmNvc3RlbGxvL2JlbmNobWFyay1yZXBvL2NvbW1pdC8wYmVlYzdiNWVhM2YwZmRiYzk1ZDBkZDQ3ZjNjNWJjMjc1ZGE4YTMzIgogICAgICAgIH0sCiAgICAgICAgImRhdGUiOiAxNzIzODk4MDk2MDAwLAogICAgICAgICJiZW5jaGVzIjogWwogICAgICAgICAgewogICAgICAgICAgICAibmFtZSI6ICJUb2RvQXBwLk9wZW5BcGlCZW5jaG1hcmtzLkFzcE5ldENvcmUiLAogICAgICAgICAgICAidmFsdWUiOiAxNTQ2MDAxLjY3MjAxOTY3NTgsCiAgICAgICAgICAgICJ1bml0IjogIm5zIiwKICAgICAgICAgICAgInJhbmdlIjogIsKxIDY1MDIwLjA5NDY4NDQxMTMwNiIsCiAgICAgICAgICAgICJieXRlc0FsbG9jYXRlZCI6IDUwMTU0OQogICAgICAgICAgfSwKICAgICAgICAgIHsKICAgICAgICAgICAgIm5hbWUiOiAiVG9kb0FwcC5PcGVuQXBpQmVuY2htYXJrcy5OU3dhZyIsCiAgICAgICAgICAgICJ2YWx1ZSI6IDQ3OTg5MTYuMTExNDMwOTIxLAogICAgICAgICAgICAidW5pdCI6ICJucyIsCiAgICAgICAgICAgICJyYW5nZSI6ICLCsSAxNjI2NTUuNDI0ODc3ODg0ODYiLAogICAgICAgICAgICAiYnl0ZXNBbGxvY2F0ZWQiOiAxNjE4NDkyCiAgICAgICAgICB9LAogICAgICAgICAgewogICAgICAgICAgICAibmFtZSI6ICJUb2RvQXBwLk9wZW5BcGlCZW5jaG1hcmtzLlN3YXNoYnVja2xlIiwKICAgICAgICAgICAgInZhbHVlIjogIk5hTiIsCiAgICAgICAgICAgICJ1bml0IjogIm5zIiwKICAgICAgICAgICAgImJ5dGVzQWxsb2NhdGVkIjogbnVsbAogICAgICAgICAgfQogICAgICAgIF0KICAgICAgfQogICAgXQogIH0KfQ=="
+      },
+      "status": 201,
+      "response": {}
+    }
+  ]
+}
