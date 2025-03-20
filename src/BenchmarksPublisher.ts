@@ -365,9 +365,11 @@ export class BenchmarksPublisher {
       for (const benchmark of result.Benchmarks) {
         const item: BenchmarkResult = {
           name: benchmark.FullName,
-          value: benchmark.Statistics.Mean,
+          value: benchmark.Statistics?.Mean ?? NaN,
           unit: 'ns',
-          range: `± ${benchmark.Statistics.StandardDeviation}`,
+          range: benchmark.Statistics
+            ? `± ${benchmark.Statistics?.StandardDeviation}`
+            : undefined,
         };
 
         if (benchmark.Memory) {
