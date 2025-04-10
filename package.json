@@ -54,7 +54,7 @@
   "dependencies": {
     "@actions/core": "^1.11.1",
     "@actions/github": "^6.0.0",
-    "@octokit/plugin-paginate-rest": "^11.6.0",
+    "@octokit/plugin-paginate-rest": "^12.0.0",
     "@octokit/plugin-rest-endpoint-methods": "^13.5.0",
     "glob": "^11.0.1",
     "lru-cache": "^11.1.0"
