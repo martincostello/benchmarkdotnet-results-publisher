@@ -39,8 +39,7 @@ on:
   push:
     branches: [ main ]
 
-permissions:
-  contents: read
+permissions: {}
 
 jobs:
   benchmark:
@@ -68,12 +67,13 @@ on:
   push:
     branches: [ main ]
 
-permissions:
-  contents: read
+permissions: {}
 
 jobs:
   benchmark:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-dotnet@v4
