@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`benchmarkdotnet-results-publisher when publishing results for existing-benchmark generates the expected GitHub step summary 1`] = `""`;
 
