@@ -47,10 +47,10 @@ jobs:
     permissions:
       contents: write
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-dotnet@v4
+    - uses: actions/checkout@v5
+    - uses: actions/setup-dotnet@v5
     - run: dotnet run --project Benchmarks.csproj --configuration Release
-    - uses: martincostello/benchmarkdotnet-results-publisher@v1
+    - uses: martincostello/benchmarkdotnet-results-publisher@v2
 ```
 
 If you wish to publish the results to a different repository, you can specify the repository
@@ -75,10 +75,10 @@ jobs:
     permissions:
       contents: read
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-dotnet@v4
+    - uses: actions/checkout@v5
+    - uses: actions/setup-dotnet@v5
     - run: dotnet run --project Benchmarks.csproj --configuration Release
-    - uses: martincostello/benchmarkdotnet-results-publisher@v1
+    - uses: martincostello/benchmarkdotnet-results-publisher@v2
       with:
         repo: '${{ github.repository_owner }}/benchmarks' # Publish to a different repository
         repo-token: ${{ secrets.BENCHMARKS_TOKEN }}       # Use a secret for the access token

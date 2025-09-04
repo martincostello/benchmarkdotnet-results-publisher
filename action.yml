@@ -53,5 +53,5 @@ inputs:
     description: 'The optional path of the BenchmarkDotNet results directory to process.'
     required: false
 runs:
-  using: 'node20'
+  using: 'node24'
   main: 'dist/main.js'
