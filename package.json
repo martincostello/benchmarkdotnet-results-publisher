@@ -1,6 +1,6 @@
 {
   "name": "benchmarkdotnet-results-publisher",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "private": true,
   "description": "A GitHub Action that publishes results from BenchmarkDotNet benchmarks to a GitHub repository.",
   "main": "lib/main.js",
