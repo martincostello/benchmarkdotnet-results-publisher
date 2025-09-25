@@ -26,6 +26,7 @@ describe('benchmarkdotnet-results-publisher', () => {
     describe.each([
       ['new-benchmark', true],
       ['existing-benchmark', true],
+      ['jobs-benchmark', true],
       ['regression', false],
       ['failing-benchmark', true],
     ])('results for %s', (scenario: string, succeeds: boolean) => {

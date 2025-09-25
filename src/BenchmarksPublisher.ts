@@ -360,11 +360,16 @@ export class BenchmarksPublisher {
 
       let suite = mergedData.entries[suiteName] ?? [];
 
+      // Do we need to use the DisplayInfo to differentiate the benchmarks?
+      const fullNames = result.Benchmarks.map((b) => b.FullName);
+      const uniqueFullNames = new Set(fullNames);
+      const useDisplayInfo = fullNames.length !== uniqueFullNames.size;
+
       const items: BenchmarkResult[] = [];
 
       for (const benchmark of result.Benchmarks) {
         const item: BenchmarkResult = {
-          name: benchmark.FullName,
+          name: useDisplayInfo ? benchmark.DisplayInfo : benchmark.FullName,
           value: benchmark.Statistics?.Mean ?? 'NaN',
           unit: 'ns',
           range: benchmark.Statistics
@@ -795,6 +800,7 @@ interface BenchmarkResult {
 }
 
 interface BenchmarkDotnetBenchmark {
+  DisplayInfo: string;
   FullName: string;
   Statistics: {
     StandardDeviation: number;
