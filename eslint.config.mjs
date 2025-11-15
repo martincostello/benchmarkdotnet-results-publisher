@@ -1,6 +1,6 @@
+import stylistic from '@stylistic/eslint-plugin';
 import github from 'eslint-plugin-github';
 import vitest from 'eslint-plugin-vitest';
-import stylistic from '@stylistic/eslint-plugin';
 import globals from 'globals';
 import tsParser from '@typescript-eslint/parser';
 

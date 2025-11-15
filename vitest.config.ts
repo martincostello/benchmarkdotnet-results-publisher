@@ -8,7 +8,7 @@ export default defineConfig({
     clearMocks: true,
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'lcov'],
+      reporter: ['lcov', 'text'],
       include: ['src/**/*.ts'],
     },
     reporters: ['default', 'github-actions'],
