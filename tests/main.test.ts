@@ -4,20 +4,13 @@
 import { ActionFixture } from './ActionFixture';
 import { setup } from './fixtures';
 
-import {
-  afterAll,
-  beforeAll,
-  describe,
-  expect,
-  jest,
-  test,
-} from '@jest/globals';
+import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest';
 
 const timeout = 45000;
 
 describe('benchmarkdotnet-results-publisher', () => {
   beforeAll(() => {
-    Date.now = jest.fn(() =>
+    Date.now = vi.fn(() =>
       new Date(Date.UTC(2024, 7, 17, 12, 34, 56)).valueOf()
     );
   });
