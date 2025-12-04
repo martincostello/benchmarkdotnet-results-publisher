@@ -42,7 +42,7 @@
     "@octokit/plugin-paginate-rest": "14.0.0",
     "@octokit/plugin-rest-endpoint-methods": "17.0.0",
     "glob": "13.0.0",
-    "lru-cache": "11.2.2"
+    "lru-cache": "11.2.4"
   },
   "devDependencies": {
     "@actions/io": "2.0.0",
