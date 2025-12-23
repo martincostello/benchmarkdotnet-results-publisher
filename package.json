@@ -11,7 +11,7 @@
     "generate": "npm run build && npm run package",
     "lint": "eslint src/**/*.ts --fix",
     "package": "esbuild lib/main.js --bundle --minify --outdir=dist --packages=bundle --platform=node --sourcemap --target=node24.0.0",
-    "test": "vitest run --coverage",
+    "test": "vitest run",
     "publish": "npm run format && npm run lint && npm run generate",
     "all": "npm run publish && npm test"
   },
