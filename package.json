@@ -37,7 +37,7 @@
   },
   "homepage": "https://github.com/martincostello/benchmarkdotnet-results-publisher#readme",
   "dependencies": {
-    "@actions/core": "2.0.2",
+    "@actions/core": "2.0.3",
     "@actions/github": "8.0.1",
     "@octokit/plugin-paginate-rest": "14.0.0",
     "@octokit/plugin-rest-endpoint-methods": "17.0.0",
