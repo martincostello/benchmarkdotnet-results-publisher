@@ -5,8 +5,8 @@ import * as core from '@actions/core';
 import * as path from 'path';
 
 import { context } from '@actions/github';
-import { BenchmarksPublisher } from './BenchmarksPublisher';
-import { PublishOptions } from './PublishOptions';
+import { BenchmarksPublisher } from './BenchmarksPublisher.js';
+import { PublishOptions } from './PublishOptions.js';
 
 export async function run(): Promise<void> {
   try {

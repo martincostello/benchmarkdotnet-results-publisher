@@ -5,27 +5,38 @@ import { vi } from 'vitest';
 
 // Mock @actions/core before importing anything else
 vi.mock('@actions/core', async () => {
-  const actual = await vi.importActual<typeof import('@actions/core')>('@actions/core');
-  
+  const actual =
+    await vi.importActual<typeof import('@actions/core')>('@actions/core');
+
   // Create a mock summary object that allows chaining
   const mockSummary = {
     ...actual.summary,
-    addRaw: vi.fn(function(this: any) { return this; }),
-    addHeading: vi.fn(function(this: any) { return this; }),
-    addEOL: vi.fn(function(this: any) { return this; }),
-    emptyBuffer: vi.fn(function(this: any) { return this; }),
+    addRaw: vi.fn(function (this: any) {
+      return this;
+    }),
+    addHeading: vi.fn(function (this: any) {
+      return this;
+    }),
+    addEOL: vi.fn(function (this: any) {
+      return this;
+    }),
+    emptyBuffer: vi.fn(function (this: any) {
+      return this;
+    }),
     stringify: vi.fn(() => ''),
-    write: vi.fn(function(this: any) { return this; }),
+    write: vi.fn(function (this: any) {
+      return this;
+    }),
   };
-  
+
   // Make all chainable methods return the mockSummary object
-  Object.keys(mockSummary).forEach(key => {
+  Object.keys(mockSummary).forEach((key) => {
     const fn = mockSummary[key as keyof typeof mockSummary];
     if (typeof fn === 'function' && fn.mockReturnThis) {
       (fn as any).mockReturnValue(mockSummary);
     }
   });
-  
+
   return {
     ...actual,
     setFailed: vi.fn(),
@@ -41,11 +52,12 @@ vi.mock('@actions/core', async () => {
 
 // Mock @actions/github to use a getter that creates a new context each time
 vi.mock('@actions/github', async () => {
-  const actual = await vi.importActual<typeof import('@actions/github')>('@actions/github');
-  
+  const actual =
+    await vi.importActual<typeof import('@actions/github')>('@actions/github');
+
   // Get the Context constructor from the actual context instance
   const ContextConstructor = actual.context.constructor;
-  
+
   return {
     ...actual,
     get context() {
@@ -198,11 +210,13 @@ export class ActionFixture {
       this.stepSummary += text;
       return core.summary;
     });
-    vi.mocked(core.summary.addHeading).mockImplementation((text: string, level?: string | number) => {
-      const headingLevel = level || 1;
-      this.stepSummary += `<h${headingLevel}>${text}</h${headingLevel}>\n\n`;
-      return core.summary;
-    });
+    vi.mocked(core.summary.addHeading).mockImplementation(
+      (text: string, level?: string | number) => {
+        const headingLevel = level || 1;
+        this.stepSummary += `<h${headingLevel}>${text}</h${headingLevel}>\n\n`;
+        return core.summary;
+      }
+    );
     vi.mocked(core.summary.addEOL).mockImplementation(() => {
       return core.summary;
     });

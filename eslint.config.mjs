@@ -42,6 +42,12 @@ export default [
       'filenames/match-regex': 'off',
       'github/filenames-match-regex': 'off',
       'import/no-namespace': 'off',
+      'import/no-unresolved': [
+        'error',
+        {
+          ignore: ['\\.js$'],
+        },
+      ],
       'no-shadow': 'off',
       'no-unused-vars': 'off',
       'semi': 'off',

@@ -6,7 +6,7 @@ import * as path from 'path';
 import { glob } from 'glob';
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import { PublishOptions } from './PublishOptions';
+import { PublishOptions } from './PublishOptions.js';
 
 export class BenchmarksPublisher {
   private readonly options: PublishOptions;
