@@ -14,5 +14,7 @@ export default defineConfig({
     },
     reporters: ['default', 'github-actions'],
     testTimeout: 45000,
+    unstubEnvs: true,
+    unstubGlobals: true,
   },
 });
