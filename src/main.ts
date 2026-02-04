@@ -4,13 +4,12 @@
 import * as core from '@actions/core';
 import * as path from 'path';
 
-import { Context } from '@actions/github/lib/context';
+import { context } from '@actions/github';
 import { BenchmarksPublisher } from './BenchmarksPublisher';
 import { PublishOptions } from './PublishOptions';
 
 export async function run(): Promise<void> {
   try {
-    const context = new Context();
     const repoPath = path.normalize(process.env.GITHUB_WORKSPACE ?? '.');
 
     const options: PublishOptions = {
