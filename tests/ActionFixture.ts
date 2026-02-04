@@ -3,12 +3,10 @@
 
 import { vi } from 'vitest';
 
-// Mock @actions/core before importing anything else
 vi.mock('@actions/core', async () => {
   const actual =
     await vi.importActual<typeof import('@actions/core')>('@actions/core');
 
-  // Create a mock summary object that allows chaining
   const mockSummary = {
     ...actual.summary,
     addRaw: vi.fn(function (this: any) {
@@ -29,7 +27,6 @@ vi.mock('@actions/core', async () => {
     }),
   };
 
-  // Make all chainable methods return the mockSummary object
   Object.keys(mockSummary).forEach((key) => {
     const fn = mockSummary[key as keyof typeof mockSummary];
     if (typeof fn === 'function' && fn.mockReturnThis) {
@@ -50,18 +47,15 @@ vi.mock('@actions/core', async () => {
   };
 });
 
-// Mock @actions/github to use a getter that creates a new context each time
 vi.mock('@actions/github', async () => {
   const actual =
     await vi.importActual<typeof import('@actions/github')>('@actions/github');
 
-  // Get the Context constructor from the actual context instance
   const ContextConstructor = actual.context.constructor;
 
   return {
     ...actual,
     get context() {
-      // Return a new Context instance each time the getter is accessed
       return new ContextConstructor();
     },
   };
