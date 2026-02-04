@@ -5,8 +5,8 @@ import * as core from '@actions/core';
 import * as path from 'path';
 
 import { context } from '@actions/github';
-import { BenchmarksPublisher } from './BenchmarksPublisher.js';
-import { PublishOptions } from './PublishOptions.js';
+import { BenchmarksPublisher } from './BenchmarksPublisher';
+import { PublishOptions } from './PublishOptions';
 
 export async function run(): Promise<void> {
   try {
@@ -73,6 +73,6 @@ export async function run(): Promise<void> {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (require.main === module) {
   run();
 }

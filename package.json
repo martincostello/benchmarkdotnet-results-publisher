@@ -2,7 +2,6 @@
   "name": "benchmarkdotnet-results-publisher",
   "version": "2.0.2",
   "private": true,
-  "type": "module",
   "description": "A GitHub Action that publishes results from BenchmarkDotNet benchmarks to a GitHub repository.",
   "main": "lib/main.js",
   "scripts": {
@@ -11,7 +10,7 @@
     "format-check": "prettier --check eslint.config.mjs src/**/*.ts tests/**/*.ts",
     "generate": "npm run build && npm run package",
     "lint": "eslint src/**/*.ts --fix",
-    "package": "esbuild lib/main.js --bundle --minify --outdir=dist --packages=bundle --platform=node --sourcemap --target=node24.0.0 --format=esm",
+    "package": "esbuild lib/main.js --bundle --minify --outdir=dist --packages=bundle --platform=node --sourcemap --target=node24.0.0",
     "test": "vitest run",
     "publish": "npm run format && npm run lint && npm run generate",
     "all": "npm run publish && npm test"
