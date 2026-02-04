@@ -23,7 +23,6 @@ AMD EPYC 7763, 1 CPU, 4 logical and 2 physical cores
 
 Benchmarks with issues:
   OpenApiBenchmarks.Swashbuckle: DefaultJob
-
 "
 `;
 
@@ -50,7 +49,6 @@ BenchmarkDotNet v0.15.2, Windows 11 (10.0.26100.6584/24H2/2024Update/HudsonValle
 | IndexOfAny_String         | .NET 9.0 | .NET 9.0 | 2.967 ns | 0.0602 ns | 0.0563 ns |  1.00 |    0.03 |         - |          NA |
 | IndexOfAny_Span_Array     | .NET 9.0 | .NET 9.0 | 1.960 ns | 0.0681 ns | 0.0885 ns |  0.66 |    0.03 |         - |          NA |
 | IndexOfAny_Span_Two_Chars | .NET 9.0 | .NET 9.0 | 1.437 ns | 0.0428 ns | 0.0379 ns |  0.48 |    0.02 |         - |          NA |
-
 "
 `;
 
@@ -125,7 +123,6 @@ WarmupCount=3
 | **Solve**  | **059**   |     **5,180,591.927 ns** |     **8,273,027.300 ns** |     **453,472.5443 ns** |    **78.1250** |  **39.0625** |  **39.0625** |    **784969 B** |
 | **Solve**  | **067**   |       **143,689.071 ns** |       **284,045.703 ns** |      **15,569.5035 ns** |    **34.4238** |   **3.4180** |        **-** |    **324343 B** |
 | **Solve**  | **097**   | **5,029,947,233.333 ns** | **4,493,728,733.623 ns** | **246,316,436.2951 ns** |          **-** |        **-** |        **-** |  **12725704 B** |
-
 "
 `;
 

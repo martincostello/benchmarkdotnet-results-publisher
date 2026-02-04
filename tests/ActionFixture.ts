@@ -1,12 +1,71 @@
 // Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+import { vi } from 'vitest';
+
+vi.mock('@actions/core', async () => {
+  const actual =
+    await vi.importActual<typeof import('@actions/core')>('@actions/core');
+
+  const mockSummary = {
+    ...actual.summary,
+    addRaw: vi.fn(function (this: any) {
+      return this;
+    }),
+    addHeading: vi.fn(function (this: any) {
+      return this;
+    }),
+    addEOL: vi.fn(function (this: any) {
+      return this;
+    }),
+    emptyBuffer: vi.fn(function (this: any) {
+      return this;
+    }),
+    stringify: vi.fn(() => ''),
+    write: vi.fn(function (this: any) {
+      return this;
+    }),
+  };
+
+  Object.keys(mockSummary).forEach((key) => {
+    const fn = mockSummary[key as keyof typeof mockSummary];
+    if (typeof fn === 'function' && fn.mockReturnThis) {
+      (fn as any).mockReturnValue(mockSummary);
+    }
+  });
+
+  return {
+    ...actual,
+    setFailed: vi.fn(),
+    isDebug: vi.fn(() => true),
+    debug: vi.fn(),
+    info: vi.fn(),
+    warning: vi.fn(),
+    notice: vi.fn(),
+    error: vi.fn(),
+    summary: mockSummary,
+  };
+});
+
+vi.mock('@actions/github', async () => {
+  const actual =
+    await vi.importActual<typeof import('@actions/github')>('@actions/github');
+
+  const ContextConstructor = actual.context.constructor;
+
+  return {
+    ...actual,
+    get context() {
+      return new ContextConstructor();
+    },
+  };
+});
+
 import * as core from '@actions/core';
 import * as fs from 'fs';
 import * as io from '@actions/io';
 import * as os from 'os';
 import * as path from 'path';
-import { vi } from 'vitest';
 import { run } from '../src/main';
 
 export class ActionFixture {
@@ -110,7 +169,7 @@ export class ActionFixture {
   }
 
   private setupMocks(): void {
-    vi.spyOn(core, 'setFailed').mockImplementation(() => {
+    vi.mocked(core.setFailed).mockImplementation(() => {
       this.failed = true;
     });
     this.setupLogging();
@@ -121,30 +180,40 @@ export class ActionFixture {
       console.debug(`[${level}] ${arg}`);
     };
 
-    vi.spyOn(core, 'isDebug').mockImplementation(() => {
+    vi.mocked(core.isDebug).mockImplementation(() => {
       return true;
     });
-    vi.spyOn(core, 'debug').mockImplementation((arg) => {
+    vi.mocked(core.debug).mockImplementation((arg) => {
       logger('debug', arg);
     });
-    vi.spyOn(core, 'info').mockImplementation((arg) => {
+    vi.mocked(core.info).mockImplementation((arg) => {
       logger('info', arg);
     });
-    vi.spyOn(core, 'notice').mockImplementation((arg) => {
+    vi.mocked(core.notice).mockImplementation((arg) => {
       logger('notice', arg);
     });
-    vi.spyOn(core, 'warning').mockImplementation((arg) => {
+    vi.mocked(core.warning).mockImplementation((arg) => {
       logger('warning', arg);
     });
-    vi.spyOn(core, 'error').mockImplementation((arg) => {
+    vi.mocked(core.error).mockImplementation((arg) => {
       logger('error', arg);
       this.errors.push(arg);
     });
 
-    vi.spyOn(core.summary, 'addRaw').mockImplementation((text: string) => {
+    vi.mocked(core.summary.addRaw).mockImplementation((text: string) => {
       this.stepSummary += text;
       return core.summary;
     });
-    vi.spyOn(core.summary, 'write').mockReturnThis();
+    vi.mocked(core.summary.addHeading).mockImplementation(
+      (text: string, level?: string | number) => {
+        const headingLevel = level || 1;
+        this.stepSummary += `<h${headingLevel}>${text}</h${headingLevel}>\n\n`;
+        return core.summary;
+      }
+    );
+    vi.mocked(core.summary.addEOL).mockImplementation(() => {
+      return core.summary;
+    });
+    vi.mocked(core.summary.write).mockReturnThis();
   }
 }
