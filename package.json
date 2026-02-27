@@ -46,7 +46,7 @@
   },
   "devDependencies": {
     "@actions/io": "3.0.2",
-    "@eslint/eslintrc": "3.3.3",
+    "@eslint/eslintrc": "3.3.4",
     "@eslint/js": "9.39.3",
     "@octokit/types": "16.0.0",
     "@stylistic/eslint-plugin": "5.8.0",
