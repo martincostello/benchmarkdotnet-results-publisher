@@ -107,11 +107,10 @@ export class BenchmarksPublisher {
   }
 
   private getArtifactsPath(): string {
-    let artifacts = this.options.resultsPath;
-    if (!artifacts) {
-      artifacts = path.join(this.options.repoPath, 'BenchmarkDotNet.Artifacts');
-    }
-    return artifacts;
+    return (
+      this.options.resultsPath ||
+      path.join(this.options.repoPath, 'BenchmarkDotNet.Artifacts')
+    );
   }
 
   private getBranch(): string {
