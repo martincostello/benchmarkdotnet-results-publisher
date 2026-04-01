@@ -96,7 +96,13 @@ export class BenchmarksPublisher {
     fileName: string
   ): Promise<BenchmarkDotNetResults> {
     try {
-      const json = await fs.promises.readFile(fileName, { encoding: 'utf8' });
+      let json = await fs.promises.readFile(fileName, { encoding: 'utf8' });
+
+      // Trim off any BOM
+      if (json.charCodeAt(0) === 0xfeff) {
+        json = json.slice(1);
+      }
+
       return JSON.parse(json);
     } catch (error) {
       core.debug(`Failed to parse '${fileName}': ${error}`);
