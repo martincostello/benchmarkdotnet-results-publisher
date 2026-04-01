@@ -496,9 +496,14 @@ export class BenchmarksPublisher {
     let summary = core.summary;
 
     for (const fileName of fileNames) {
-      const markdown = await fs.promises.readFile(fileName, {
+      let markdown = await fs.promises.readFile(fileName, {
         encoding: 'utf8',
       });
+
+      // Trim off any BOM
+      if (markdown.charCodeAt(0) === 0xfeff) {
+        markdown = markdown.slice(1);
+      }
 
       const title = path
         .basename(fileName, '.md')
