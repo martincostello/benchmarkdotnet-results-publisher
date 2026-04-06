@@ -50,6 +50,7 @@ vi.mock('@actions/core', async () => {
 vi.mock('@actions/github', async () => {
   const actual =
     await vi.importActual<typeof import('@actions/github')>('@actions/github');
+  const { fetch } = await import('undici');
 
   const ContextConstructor = actual.context.constructor;
 
@@ -57,6 +58,9 @@ vi.mock('@actions/github', async () => {
     ...actual,
     get context() {
       return new ContextConstructor();
+    },
+    getOctokit(token: string, options?: Record<string, unknown>) {
+      return actual.getOctokit(token, { ...options, request: { fetch } });
     },
   };
 });
