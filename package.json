@@ -62,7 +62,7 @@
     "globals": "17.7.0",
     "prettier": "3.9.5",
     "typescript": "6.0.3",
-    "undici": "8.7.0",
+    "undici": "8.8.0",
     "vitest": "4.1.10"
   },
   "prettier": {
