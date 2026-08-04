@@ -39,8 +39,8 @@
   "dependencies": {
     "@actions/core": "3.0.1",
     "@actions/github": "9.1.1",
-    "@octokit/plugin-paginate-rest": "14.0.0",
-    "@octokit/plugin-rest-endpoint-methods": "17.0.0",
+    "@octokit/plugin-paginate-rest": "15.0.0",
+    "@octokit/plugin-rest-endpoint-methods": "18.0.0",
     "glob": "13.0.6",
     "lru-cache": "11.5.2"
   },
@@ -48,7 +48,7 @@
     "@actions/io": "3.0.2",
     "@eslint/eslintrc": "3.3.6",
     "@eslint/js": "10.0.1",
-    "@octokit/types": "16.0.0",
+    "@octokit/types": "17.0.0",
     "@stylistic/eslint-plugin": "5.10.0",
     "@types/node": "25.9.5",
     "@typescript-eslint/eslint-plugin": "8.65.0",
