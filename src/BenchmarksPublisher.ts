@@ -389,11 +389,18 @@ export class BenchmarksPublisher {
         items.push(item);
       }
 
-      suite.push({
+      const environment = this.getEnvironmentMetadata(
+        result.HostEnvironmentInfo
+      );
+
+      const entry: Benchmark = {
         commit,
         date: now,
+        metadata: environment ? { environment } : undefined,
         benches: items,
-      });
+      };
+
+      suite.push(entry);
 
       if (this.options.maxItems && suite.length > this.options.maxItems) {
         core.debug(
@@ -406,6 +413,25 @@ export class BenchmarksPublisher {
     }
 
     return mergedData;
+  }
+
+  private getEnvironmentMetadata(
+    info?: HostEnvironmentInfo
+  ): MetadataMap | undefined {
+    if (!info) {
+      return undefined;
+    }
+
+    const environment: MetadataMap = {};
+
+    for (const key of allowedEnvironmentMetadataKeys) {
+      const value = info[key];
+      if (value !== undefined && value !== null) {
+        environment[key] = value;
+      }
+    }
+
+    return Object.keys(environment).length > 0 ? environment : undefined;
   }
 
   private async publishResults(
@@ -798,8 +824,27 @@ export class BenchmarksPublisher {
 export interface Benchmark {
   commit: Commit;
   date: number;
+  metadata?: BenchmarkMetadata;
   benches: BenchmarkResult[];
 }
+
+interface BenchmarkMetadata {
+  environment?: MetadataMap;
+}
+
+type MetadataMap = Record<string, unknown>;
+
+const allowedEnvironmentMetadataKeys = [
+  'Architecture',
+  'BenchmarkDotNetVersion',
+  'DotNetCliVersion',
+  'LogicalCoreCount',
+  'OsVersion',
+  'PhysicalCoreCount',
+  'PhysicalProcessorCount',
+  'ProcessorName',
+  'RuntimeVersion',
+] as const;
 
 interface BenchmarkResult {
   name: string;
@@ -825,8 +870,11 @@ interface BenchmarkDotnetBenchmark {
   };
 }
 
+type HostEnvironmentInfo = MetadataMap;
+
 interface BenchmarkDotNetResults {
   Title: string;
+  HostEnvironmentInfo?: HostEnvironmentInfo;
   Benchmarks: BenchmarkDotnetBenchmark[];
 }
 
