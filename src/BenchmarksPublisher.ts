@@ -434,7 +434,7 @@ export class BenchmarksPublisher {
     const commit = await this.getCurrentCommit();
 
     let attempts = 0;
-    const maxRetries = 3;
+    const maxRetries = 5;
 
     while (attempts < maxRetries) {
       if (attempts > 0) {
