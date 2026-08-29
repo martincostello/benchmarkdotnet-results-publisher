@@ -156,9 +156,7 @@ export class BenchmarksPublisher {
     const ref = this.getBranch();
     const fileName = this.getResultsPath();
 
-    const octokit = github.getOctokit(this.options.accessToken, {
-      baseUrl: this.options.apiUrl,
-    });
+    const octokit = this.getOctokit();
 
     await this.ensureBranch(owner, repo, ref);
 
@@ -269,9 +267,7 @@ export class BenchmarksPublisher {
     const json = JSON.stringify(results, null, 2);
     const content = Buffer.from(json, 'utf8').toString('base64');
 
-    const octokit = github.getOctokit(this.options.accessToken, {
-      baseUrl: this.options.apiUrl,
-    });
+    const octokit = this.getOctokit();
 
     try {
       const { data: commit } =
@@ -306,9 +302,7 @@ export class BenchmarksPublisher {
     repo: string,
     branch: string
   ): Promise<void> {
-    const octokit = github.getOctokit(this.options.accessToken, {
-      baseUrl: this.options.apiUrl,
-    });
+    const octokit = this.getOctokit();
 
     let exists: boolean;
 
@@ -488,9 +482,7 @@ export class BenchmarksPublisher {
     const [owner, repo] = this.getRunRepository().split('/');
     const ref = this.options.sha;
 
-    const octokit = github.getOctokit(this.options.accessToken, {
-      baseUrl: this.options.apiUrl,
-    });
+    const octokit = this.getOctokit();
 
     const { data: commit } = await octokit.rest.repos.getCommit({
       owner,
@@ -740,9 +732,7 @@ export class BenchmarksPublisher {
   private async postComment(body: string): Promise<void> {
     const [owner, repo] = this.getRunRepository().split('/');
 
-    const octokit = github.getOctokit(this.options.accessToken, {
-      baseUrl: this.options.apiUrl,
-    });
+    const octokit = this.getOctokit();
 
     const { data: prs } =
       await octokit.rest.repos.listPullRequestsAssociatedWithCommit({
@@ -765,9 +755,7 @@ export class BenchmarksPublisher {
     issue_number: number,
     body: string
   ): Promise<void> {
-    const octokit = github.getOctokit(this.options.accessToken, {
-      baseUrl: this.options.apiUrl,
-    });
+    const octokit = this.getOctokit();
 
     const { data: comments } = await octokit.rest.issues.listComments({
       owner,
@@ -809,14 +797,18 @@ export class BenchmarksPublisher {
     commit_sha: string,
     body: string
   ): Promise<void> {
-    const octokit = github.getOctokit(this.options.accessToken, {
-      baseUrl: this.options.apiUrl,
-    });
+    const octokit = this.getOctokit();
     await octokit.rest.repos.createCommitComment({
       owner,
       repo,
       commit_sha,
       body,
+    });
+  }
+
+  private getOctokit(): ReturnType<typeof github.getOctokit> {
+    return github.getOctokit(this.options.accessToken, {
+      baseUrl: this.options.apiUrl,
     });
   }
 }
