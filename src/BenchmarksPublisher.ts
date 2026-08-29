@@ -437,6 +437,14 @@ export class BenchmarksPublisher {
     const maxRetries = 3;
 
     while (attempts < maxRetries) {
+      if (attempts > 0) {
+        const delayMs = this.getRetryDelayMs(attempts);
+        core.debug(
+          `Retrying update of results in ${delayMs}ms (attempt ${attempts + 1} of ${maxRetries}).`
+        );
+        await this.delay(delayMs);
+      }
+
       const { data, sha } = await this.getCurrentResults();
       const merged = this.mergeResults(data, benchmarks, commit);
       if (await this.updateResults(sha, merged)) {
@@ -476,6 +484,22 @@ export class BenchmarksPublisher {
     }
 
     throw new Error(`Failed to update results after ${maxRetries} attempts.`);
+  }
+
+  private async delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  private getRetryDelayMs(attempt: number): number {
+    const baseDelayMs = 500;
+    const maxDelayMs = 30000;
+
+    const exponentialDelayMs = Math.min(
+      maxDelayMs,
+      baseDelayMs * 2 ** (attempt - 1)
+    );
+
+    return Math.random() * exponentialDelayMs;
   }
 
   private async getCurrentCommit(): Promise<Commit> {
