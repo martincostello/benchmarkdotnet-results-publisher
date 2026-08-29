@@ -156,9 +156,7 @@ export class BenchmarksPublisher {
     const ref = this.getBranch();
     const fileName = this.getResultsPath();
 
-    const octokit = github.getOctokit(this.options.accessToken, {
-      baseUrl: this.options.apiUrl,
-    });
+    const octokit = this.getOctokit();
 
     await this.ensureBranch(owner, repo, ref);
 
@@ -269,9 +267,7 @@ export class BenchmarksPublisher {
     const json = JSON.stringify(results, null, 2);
     const content = Buffer.from(json, 'utf8').toString('base64');
 
-    const octokit = github.getOctokit(this.options.accessToken, {
-      baseUrl: this.options.apiUrl,
-    });
+    const octokit = this.getOctokit();
 
     try {
       const { data: commit } =
@@ -306,9 +302,7 @@ export class BenchmarksPublisher {
     repo: string,
     branch: string
   ): Promise<void> {
-    const octokit = github.getOctokit(this.options.accessToken, {
-      baseUrl: this.options.apiUrl,
-    });
+    const octokit = this.getOctokit();
 
     let exists: boolean;
 
@@ -440,9 +434,17 @@ export class BenchmarksPublisher {
     const commit = await this.getCurrentCommit();
 
     let attempts = 0;
-    const maxRetries = 3;
+    const maxRetries = 5;
 
     while (attempts < maxRetries) {
+      if (attempts > 0) {
+        const delayMs = this.getRetryDelayMs(attempts);
+        core.debug(
+          `Retrying update of results in ${delayMs}ms (attempt ${attempts + 1} of ${maxRetries}).`
+        );
+        await this.delay(delayMs);
+      }
+
       const { data, sha } = await this.getCurrentResults();
       const merged = this.mergeResults(data, benchmarks, commit);
       if (await this.updateResults(sha, merged)) {
@@ -484,13 +486,27 @@ export class BenchmarksPublisher {
     throw new Error(`Failed to update results after ${maxRetries} attempts.`);
   }
 
+  private async delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  private getRetryDelayMs(attempt: number): number {
+    const baseDelayMs = 500;
+    const maxDelayMs = 30000;
+
+    const exponentialDelayMs = Math.min(
+      maxDelayMs,
+      baseDelayMs * 2 ** (attempt - 1)
+    );
+
+    return Math.max(1, Math.round(Math.random() * exponentialDelayMs));
+  }
+
   private async getCurrentCommit(): Promise<Commit> {
     const [owner, repo] = this.getRunRepository().split('/');
     const ref = this.options.sha;
 
-    const octokit = github.getOctokit(this.options.accessToken, {
-      baseUrl: this.options.apiUrl,
-    });
+    const octokit = this.getOctokit();
 
     const { data: commit } = await octokit.rest.repos.getCommit({
       owner,
@@ -740,9 +756,7 @@ export class BenchmarksPublisher {
   private async postComment(body: string): Promise<void> {
     const [owner, repo] = this.getRunRepository().split('/');
 
-    const octokit = github.getOctokit(this.options.accessToken, {
-      baseUrl: this.options.apiUrl,
-    });
+    const octokit = this.getOctokit();
 
     const { data: prs } =
       await octokit.rest.repos.listPullRequestsAssociatedWithCommit({
@@ -765,9 +779,7 @@ export class BenchmarksPublisher {
     issue_number: number,
     body: string
   ): Promise<void> {
-    const octokit = github.getOctokit(this.options.accessToken, {
-      baseUrl: this.options.apiUrl,
-    });
+    const octokit = this.getOctokit();
 
     const { data: comments } = await octokit.rest.issues.listComments({
       owner,
@@ -809,14 +821,18 @@ export class BenchmarksPublisher {
     commit_sha: string,
     body: string
   ): Promise<void> {
-    const octokit = github.getOctokit(this.options.accessToken, {
-      baseUrl: this.options.apiUrl,
-    });
+    const octokit = this.getOctokit();
     await octokit.rest.repos.createCommitComment({
       owner,
       repo,
       commit_sha,
       body,
+    });
+  }
+
+  private getOctokit(): ReturnType<typeof github.getOctokit> {
+    return github.getOctokit(this.options.accessToken, {
+      baseUrl: this.options.apiUrl,
     });
   }
 }
