@@ -499,7 +499,7 @@ export class BenchmarksPublisher {
       baseDelayMs * 2 ** (attempt - 1)
     );
 
-    return Math.random() * exponentialDelayMs;
+    return Math.max(1, Math.round(Math.random() * exponentialDelayMs));
   }
 
   private async getCurrentCommit(): Promise<Commit> {
