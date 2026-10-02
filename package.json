@@ -39,7 +39,7 @@
   "dependencies": {
     "@actions/core": "3.0.1",
     "@actions/github": "9.1.1",
-    "@octokit/plugin-paginate-rest": "15.0.0",
+    "@octokit/plugin-paginate-rest": "16.0.0",
     "@octokit/plugin-rest-endpoint-methods": "18.0.0",
     "glob": "13.0.6",
     "lru-cache": "11.5.3"
